@@ -57,6 +57,13 @@ The default API base URL is `http://localhost:8080/api/v1`. For a deployed front
 flutter build web --release --dart-define=API_BASE_URL=https://your-api.example.com/api/v1
 ```
 
+### Netlify deployment
+The repository includes `netlify.toml`; its publish directory is `build/web`. The build script installs the Flutter revision pinned in `.metadata`, then builds the release app with `API_BASE_URL` from the Netlify build environment.
+
+After deploying `vms-backend` to Render, set the Netlify build variable `API_BASE_URL` to the Render service's public HTTPS URL followed by `/api/v1`. This URL is compiled into the public Flutter bundle, so it must not contain credentials or other secrets. The script stops the deploy build if the variable is missing or is not an HTTPS `/api/v1` URL. Set the backend's `CORS_ALLOWED_ORIGIN_PATTERNS` to the Netlify site origin.
+
+The current app keeps screen navigation inside Flutter and does not use path-based routes, so a Netlify SPA rewrite is not needed. If path-based deep links are introduced later, add a rewrite to `index.html` for those routes.
+
 For browser requests, configure the backend's `CORS_ALLOWED_ORIGIN_PATTERNS` environment variable to include the frontend origin. Its local defaults allow `localhost` and `127.0.0.1` origins.
 
 Create the local course login in the backend's ignored `.env` file using `VMS_AUTH_USERNAME` and `VMS_AUTH_PASSWORD`. See the backend `docs/auth-api.md` contract for details.
