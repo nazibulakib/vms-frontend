@@ -8,4 +8,13 @@ class EnvConfig {
     'API_BASE_URL',
     defaultValue: 'http://localhost:8080/api/v1',
   );
+
+  static const int apiRequestTimeoutSeconds = int.fromEnvironment(
+    'API_REQUEST_TIMEOUT_SECONDS',
+    defaultValue: 110,
+  );
+
+  static const Duration apiRequestTimeout = Duration(
+    seconds: apiRequestTimeoutSeconds,
+  );
 }

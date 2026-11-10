@@ -5,6 +5,7 @@ import 'package:vms_frontend/app/app_shell.dart';
 import 'package:vms_frontend/core/theme/app_theme.dart';
 import 'package:vms_frontend/features/auth/data/auth_api_exception.dart';
 import 'package:vms_frontend/features/auth/data/auth_service.dart';
+import 'package:vms_frontend/shared/widgets/server_request_progress.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -22,6 +23,7 @@ class _LoginScreenState extends State<LoginScreen> {
   bool _isSubmitting = false;
   bool _isRestoring = true;
   String? _authError;
+  String? _restoreError;
 
   @override
   void initState() {
@@ -30,10 +32,24 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Future<void> _restoreSession() async {
-    final session = await _authService.restoreSession();
-    if (!mounted) return;
-    setState(() => _isRestoring = false);
-    if (session != null) _openWorkspace();
+    setState(() {
+      _isRestoring = true;
+      _restoreError = null;
+    });
+    try {
+      final session = await _authService.restoreSession();
+      if (!mounted) return;
+      setState(() => _isRestoring = false);
+      if (session != null) _openWorkspace();
+    } catch (error) {
+      if (!mounted) return;
+      setState(() {
+        _isRestoring = false;
+        _restoreError = error is AuthApiException
+            ? error.message
+            : 'Could not restore your session. Please try again.';
+      });
+    }
   }
 
   @override
@@ -191,6 +207,34 @@ class _LoginScreenState extends State<LoginScreen> {
                               ),
                             ),
                           ],
+                          if (_restoreError != null) ...[
+                            Semantics(
+                              liveRegion: true,
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.stretch,
+                                children: [
+                                  Text(
+                                    _restoreError!,
+                                    style: const TextStyle(
+                                      color: Color(0xFFB42318),
+                                    ),
+                                  ),
+                                  TextButton.icon(
+                                    onPressed: _isRestoring
+                                        ? null
+                                        : _restoreSession,
+                                    icon: const Icon(Icons.refresh_rounded),
+                                    label: const Text('Retry session restore'),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                          if (_isRestoring || _isSubmitting) ...[
+                            const SizedBox(height: 16),
+                            const ServerRequestProgress(),
+                            const SizedBox(height: 16),
+                          ],
                           FilledButton(
                             onPressed: _isSubmitting || _isRestoring
                                 ? null
@@ -203,7 +247,11 @@ class _LoginScreenState extends State<LoginScreen> {
                                       strokeWidth: 2,
                                     ),
                                   )
-                                : const Text('Sign in'),
+                                : Text(
+                                    _authError == null
+                                        ? 'Sign in'
+                                        : 'Try again',
+                                  ),
                           ),
                           const SizedBox(height: 18),
                           Container(

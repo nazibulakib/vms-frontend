@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:vms_frontend/core/theme/app_theme.dart';
 import 'package:vms_frontend/features/vehicles/vehicle.dart';
+import 'package:vms_frontend/features/vehicles/data/vehicle_api_exception.dart';
+import 'package:vms_frontend/shared/widgets/server_request_progress.dart';
 
 class VehicleFormScreen extends StatefulWidget {
   const VehicleFormScreen({super.key, this.vehicle, required this.onSave});
@@ -22,6 +24,7 @@ class _VehicleFormScreenState extends State<VehicleFormScreen> {
   late String _status;
   bool _isSaving = false;
   String? _saveError;
+  bool _saveTimedOut = false;
 
   bool get _isEditing => widget.vehicle != null;
 
@@ -69,6 +72,7 @@ class _VehicleFormScreenState extends State<VehicleFormScreen> {
     setState(() {
       _isSaving = true;
       _saveError = null;
+      _saveTimedOut = false;
     });
     try {
       final saved = await widget.onSave(draft);
@@ -78,6 +82,7 @@ class _VehicleFormScreenState extends State<VehicleFormScreen> {
         setState(() {
           _isSaving = false;
           _saveError = error.toString();
+          _saveTimedOut = error is VehicleApiException && error.timedOut;
         });
       }
     }
@@ -237,11 +242,25 @@ class _VehicleFormScreenState extends State<VehicleFormScreen> {
                                 const SizedBox(height: 16),
                                 Semantics(
                                   liveRegion: true,
-                                  child: Text(
-                                    _saveError!,
-                                    style: const TextStyle(
-                                      color: Color(0xFFB42318),
-                                    ),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        _saveError!,
+                                        style: const TextStyle(
+                                          color: Color(0xFFB42318),
+                                        ),
+                                      ),
+                                      if (_saveTimedOut)
+                                        TextButton.icon(
+                                          onPressed: _isSaving ? null : _save,
+                                          icon: const Icon(
+                                            Icons.refresh_rounded,
+                                          ),
+                                          label: const Text('Try save again'),
+                                        ),
+                                    ],
                                   ),
                                 ),
                               ],
@@ -280,34 +299,43 @@ class _VehicleFormScreenState extends State<VehicleFormScreen> {
                     color: Colors.white,
                     border: Border(top: BorderSide(color: AppTheme.border)),
                   ),
-                  child: Row(
+                  child: Column(
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
-                      OutlinedButton(
-                        onPressed: _isSaving
-                            ? null
-                            : () => Navigator.of(context).pop(),
-                        child: const Text('Cancel'),
-                      ),
-                      const SizedBox(width: 12),
-                      FilledButton.icon(
-                        onPressed: _isSaving ? null : _save,
-                        icon: _isSaving
-                            ? const SizedBox(
-                                width: 18,
-                                height: 18,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                ),
-                              )
-                            : const Icon(Icons.check_rounded, size: 18),
-                        label: Text(
-                          _isSaving
-                              ? 'Saving…'
-                              : _isEditing
-                              ? 'Save changes'
-                              : 'Register vehicle',
-                        ),
+                      if (_isSaving) ...[
+                        const ServerRequestProgress(),
+                        const SizedBox(height: 12),
+                      ],
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          OutlinedButton(
+                            onPressed: _isSaving
+                                ? null
+                                : () => Navigator.of(context).pop(),
+                            child: const Text('Cancel'),
+                          ),
+                          const SizedBox(width: 12),
+                          FilledButton.icon(
+                            onPressed: _isSaving ? null : _save,
+                            icon: _isSaving
+                                ? const SizedBox(
+                                    width: 18,
+                                    height: 18,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                    ),
+                                  )
+                                : const Icon(Icons.check_rounded, size: 18),
+                            label: Text(
+                              _isSaving
+                                  ? 'Saving…'
+                                  : _isEditing
+                                  ? 'Save changes'
+                                  : 'Register vehicle',
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),

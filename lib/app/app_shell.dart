@@ -11,6 +11,7 @@ import 'package:vms_frontend/features/vehicles/vehicle_form_screen.dart';
 import 'package:vms_frontend/features/vehicles/vehicle_list_screen.dart';
 import 'package:vms_frontend/shared/widgets/error_view.dart';
 import 'package:vms_frontend/shared/widgets/loading_indicator.dart';
+import 'package:vms_frontend/shared/widgets/server_request_progress.dart';
 
 class AppShell extends StatefulWidget {
   const AppShell({super.key, required this.authService});
@@ -25,6 +26,7 @@ class _AppShellState extends State<AppShell> {
   late final VehicleRepository _vehicleRepository;
   List<Vehicle> _vehicles = [];
   bool _isLoading = true;
+  bool _isDeletingVehicle = false;
   String? _loadError;
 
   @override
@@ -108,6 +110,7 @@ class _AppShellState extends State<AppShell> {
       ),
     );
     if (shouldDelete != true || !mounted) return;
+    setState(() => _isDeletingVehicle = true);
     try {
       await _vehicleRepository.deleteVehicle(vehicle.id);
       if (!mounted) return;
@@ -121,6 +124,8 @@ class _AppShellState extends State<AppShell> {
       if (!mounted) return;
       ScaffoldMessenger.of(context)
           .showSnackBar(SnackBar(content: Text(error.toString())));
+    } finally {
+      if (mounted) setState(() => _isDeletingVehicle = false);
     }
   }
 
@@ -135,12 +140,30 @@ class _AppShellState extends State<AppShell> {
         onRetry: _loadVehicles,
       );
     }
-    return VehicleListScreen(
-      vehicles: List.unmodifiable(_vehicles),
-      onCreate: () => _openForm(),
-      onEdit: (vehicle) => _openForm(vehicle: vehicle),
-      onDelete: _deleteVehicle,
-      onRefresh: _loadVehicles,
+    return Stack(
+      children: [
+        VehicleListScreen(
+          vehicles: List.unmodifiable(_vehicles),
+          onCreate: () => _openForm(),
+          onEdit: (vehicle) => _openForm(vehicle: vehicle),
+          onDelete: _deleteVehicle,
+          onRefresh: _loadVehicles,
+        ),
+        if (_isDeletingVehicle)
+          Positioned.fill(
+            child: ColoredBox(
+              color: Color(0x66000000),
+              child: Center(
+                child: Card(
+                  child: Padding(
+                    padding: const EdgeInsets.all(24),
+                    child: const ServerRequestProgress(),
+                  ),
+                ),
+              ),
+            ),
+          ),
+      ],
     );
   }
 

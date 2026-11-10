@@ -92,7 +92,7 @@ class VehicleApiClient {
 
   Future<http.Response> _send(Future<http.Response> Function() request) async {
     try {
-      final response = await request().timeout(const Duration(seconds: 20));
+      final response = await request().timeout(EnvConfig.apiRequestTimeout);
       if (response.statusCode < 200 || response.statusCode >= 300) {
         _throwApiError(response);
       }
@@ -100,8 +100,9 @@ class VehicleApiClient {
     } on VehicleApiException {
       rethrow;
     } on TimeoutException {
-      throw const VehicleApiException(
-        'The server took too long to respond. Please try again.',
+      throw VehicleApiException(
+        'The server did not respond within ${EnvConfig.apiRequestTimeoutSeconds} seconds. It may still be waking up. The save may have completed; check the vehicle list before retrying.',
+        timedOut: true,
       );
     } on http.ClientException {
       throw const VehicleApiException(

@@ -77,7 +77,7 @@ class AuthApiClient {
 
   Future<http.Response> _send(Future<http.Response> Function() request) async {
     try {
-      final response = await request().timeout(const Duration(seconds: 20));
+      final response = await request().timeout(EnvConfig.apiRequestTimeout);
       if (response.statusCode < 200 || response.statusCode >= 300) {
         final body = _readJson(response);
         final message =
@@ -90,8 +90,9 @@ class AuthApiClient {
     } on AuthApiException {
       rethrow;
     } on TimeoutException {
-      throw const AuthApiException(
-        'The server took too long to respond. Please try again.',
+      throw AuthApiException(
+        'The server did not respond within ${EnvConfig.apiRequestTimeoutSeconds} seconds. It may still be waking up. Please try again.',
+        timedOut: true,
       );
     } on http.ClientException {
       throw const AuthApiException(

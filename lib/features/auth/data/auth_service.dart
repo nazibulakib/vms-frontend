@@ -1,4 +1,5 @@
 import 'package:vms_frontend/features/auth/data/auth_api_client.dart';
+import 'package:vms_frontend/features/auth/data/auth_api_exception.dart';
 import 'package:vms_frontend/features/auth/data/auth_session.dart';
 import 'package:vms_frontend/features/auth/data/auth_session_store.dart';
 
@@ -19,6 +20,10 @@ class AuthService {
     if (token == null || token.isEmpty) return null;
     try {
       return await _apiClient.currentSession(token);
+    } on AuthApiException catch (error) {
+      if (error.timedOut) rethrow;
+      _sessionStore.clear();
+      return null;
     } catch (_) {
       _sessionStore.clear();
       return null;

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:vms_frontend/shared/widgets/server_request_progress.dart';
 
 /// Reusable centralized loading indicator widget.
 class LoadingIndicator extends StatelessWidget {
@@ -12,7 +13,7 @@ class LoadingIndicator extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const CircularProgressIndicator(),
+          const ServerRequestProgress(),
           if (message != null) ...[
             const SizedBox(height: 16),
             Text(message!, style: Theme.of(context).textTheme.bodyMedium),
