@@ -45,8 +45,40 @@ class _ServerRequestProgressState extends State<ServerRequestProgress> {
             semanticsLabel: 'Request in progress',
           ),
           if (_showWaitMessage) ...[
-            const SizedBox(height: 12),
-            Text(_waitMessage, textAlign: TextAlign.center),
+            const SizedBox(height: 16),
+            ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 400),
+              child: Container(
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFFF8E5),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: const Color(0xFFFFE7A0)),
+                ),
+                child: const Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Icon(
+                      Icons.schedule_rounded,
+                      color: Color(0xFFB54708),
+                      size: 18,
+                    ),
+                    SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        _waitMessage,
+                        textAlign: TextAlign.left,
+                        style: TextStyle(
+                          color: Color(0xFF93370D),
+                          fontSize: 13,
+                          height: 1.45,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
           ],
         ],
       ),

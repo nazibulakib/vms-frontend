@@ -74,7 +74,7 @@ class _LoginScreenState extends State<LoginScreen> {
         setState(() {
           _authError = error is AuthApiException
               ? error.message
-              : 'Sign in failed. Please try again.';
+              : 'Sign in failed. Please check your credentials and try again.';
         });
       }
     } finally {
@@ -92,759 +92,852 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final isWide = MediaQuery.sizeOf(context).width >= 900;
+    final width = MediaQuery.sizeOf(context).width;
+    final isDesktop = width >= 960;
+
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: AppTheme.canvas,
       body: SafeArea(
         child: Row(
           children: [
-            if (isWide) const Expanded(flex: 11, child: _WelcomePanel()),
+            if (isDesktop) const Expanded(flex: 11, child: _HeroTelemetryPanel()),
             Expanded(
-              flex: isWide ? 9 : 1,
-              child: Container(
-                color: AppTheme.canvas,
-                child: Center(
-                  child: SingleChildScrollView(
-                    padding: EdgeInsets.symmetric(
-                      horizontal: isWide ? 44 : 22,
-                      vertical: 28,
-                    ),
-                    child: ConstrainedBox(
-                      constraints: const BoxConstraints(maxWidth: 460),
+              flex: isDesktop ? 9 : 1,
+              child: Center(
+                child: SingleChildScrollView(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: isDesktop ? 48 : 20,
+                    vertical: 32,
+                  ),
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 440),
+                    child: Container(
+                      padding: EdgeInsets.all(isDesktop ? 36 : 24),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(color: AppTheme.border),
+                        boxShadow: AppTheme.cardShadow,
+                      ),
                       child: Form(
                         key: _formKey,
-                        child: Container(
-                          padding: EdgeInsets.all(isWide ? 34 : 26),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(24),
-                            border: Border.all(color: const Color(0xFFE8EDF2)),
-                            boxShadow: const [
-                              BoxShadow(
-                                color: Color(0x10142B45),
-                                blurRadius: 38,
-                                offset: Offset(0, 18),
-                              ),
-                            ],
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.stretch,
-                            children: [
-                              Row(
-                                children: [
-                                  const _BrandLockup(dark: true),
-                                  const Spacer(),
-                                  _PortalBadge(compact: !isWide),
-                                ],
-                              ),
-                              const SizedBox(height: 34),
-                              Text(
-                                'Welcome back',
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .headlineMedium
-                                    ?.copyWith(
-                                      fontSize: 30,
-                                      letterSpacing: -0.9,
-                                    ),
-                              ),
-                              const SizedBox(height: 8),
-                              const Text(
-                                'Sign in to your fleet workspace to continue.',
-                                style: TextStyle(
-                                  color: AppTheme.mutedInk,
-                                  fontSize: 15,
-                                  height: 1.5,
-                                ),
-                              ),
-                              const SizedBox(height: 30),
-                              const _FieldLabel('Work email'),
-                              Semantics(
-                                container: true,
-                                label: 'Work email',
-                                textField: true,
-                                child: TextFormField(
-                                  controller: _emailController,
-                                  keyboardType: TextInputType.emailAddress,
-                                  autofillHints: const [AutofillHints.username],
-                                  textInputAction: TextInputAction.next,
-                                  decoration:
-                                      const InputDecoration(
-                                        hintText: 'name@company.com',
-                                        prefixIcon: Icon(
-                                          Icons.mail_outline_rounded,
-                                        ),
-                                      ).copyWith(
-                                        filled: true,
-                                        fillColor: const Color(0xFFF8FAFC),
-                                      ),
-                                  validator: (value) {
-                                    final email = value?.trim() ?? '';
-                                    if (email.isEmpty) {
-                                      return 'Enter your work email.';
-                                    }
-                                    if (!RegExp(r'^.+@.+\..+$')
-                                        .hasMatch(email)) {
-                                      return 'Enter a valid email address.';
-                                    }
-                                    return null;
-                                  },
-                                ),
-                              ),
-                              const SizedBox(height: 20),
-                              const _FieldLabel('Password'),
-                              Semantics(
-                                container: true,
-                                label: 'Password',
-                                textField: true,
-                                child: TextFormField(
-                                  controller: _passwordController,
-                                  obscureText: _obscurePassword,
-                                  autofillHints: const [AutofillHints.password],
-                                  onFieldSubmitted: (_) => _signIn(),
-                                  decoration: InputDecoration(
-                                    hintText: 'Enter your password',
-                                    prefixIcon: const Icon(
-                                      Icons.lock_outline_rounded,
-                                    ),
-                                    filled: true,
-                                    fillColor: const Color(0xFFF8FAFC),
-                                    suffixIcon: IconButton(
-                                      tooltip: _obscurePassword
-                                          ? 'Show password'
-                                          : 'Hide password',
-                                      onPressed: () => setState(
-                                        () => _obscurePassword =
-                                            !_obscurePassword,
-                                      ),
-                                      icon: Icon(
-                                        _obscurePassword
-                                            ? Icons.visibility_outlined
-                                            : Icons.visibility_off_outlined,
-                                      ),
-                                    ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            // Mobile/Header Brand Tag
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                const _BrandBadge(),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 10,
+                                    vertical: 4,
                                   ),
-                                  validator: (value) => (value?.isEmpty ?? true)
-                                      ? 'Enter a password to continue.'
-                                      : null,
-                                ),
-                              ),
-                              const SizedBox(height: 22),
-                              if (_authError != null) ...[
-                                Semantics(
-                                  liveRegion: true,
-                                  child: Container(
-                                    margin: const EdgeInsets.only(bottom: 16),
-                                    padding: const EdgeInsets.all(14),
-                                    decoration: BoxDecoration(
-                                      color: const Color(0xFFFFF4F2),
-                                      borderRadius: BorderRadius.circular(12),
-                                      border: Border.all(
-                                        color: const Color(0xFFFED7D2),
-                                      ),
-                                    ),
-                                    child: Text(
-                                      _authError!,
-                                      style: const TextStyle(
-                                        color: Color(0xFFB42318),
-                                      ),
-                                    ),
+                                  decoration: BoxDecoration(
+                                    color: AppTheme.tealLight,
+                                    borderRadius: BorderRadius.circular(20),
                                   ),
-                                ),
-                              ],
-                              if (_restoreError != null) ...[
-                                Semantics(
-                                  liveRegion: true,
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.stretch,
+                                  child: const Row(
+                                    mainAxisSize: MainAxisSize.min,
                                     children: [
-                                      Text(
-                                        _restoreError!,
-                                        style: const TextStyle(
-                                          color: Color(0xFFB42318),
-                                        ),
+                                      Icon(
+                                        Icons.shield_outlined,
+                                        size: 13,
+                                        color: AppTheme.teal,
                                       ),
-                                      TextButton.icon(
-                                        onPressed: _isRestoring
-                                            ? null
-                                            : _restoreSession,
-                                        icon: const Icon(Icons.refresh_rounded),
-                                        label: const Text(
-                                          'Retry session restore',
+                                      SizedBox(width: 5),
+                                      Text(
+                                        'ENTERPRISE',
+                                        style: TextStyle(
+                                          color: AppTheme.tealDark,
+                                          fontSize: 10,
+                                          fontWeight: FontWeight.w700,
+                                          letterSpacing: 0.8,
                                         ),
                                       ),
                                     ],
                                   ),
                                 ),
                               ],
-                              if (_isRestoring || _isSubmitting) ...[
-                                const SizedBox(height: 16),
-                                const ServerRequestProgress(),
-                                const SizedBox(height: 16),
-                              ],
-                              SizedBox(
-                                height: 54,
-                                child: FilledButton.icon(
-                                  onPressed: _isSubmitting || _isRestoring
-                                      ? null
-                                      : _signIn,
-                                  icon: _isSubmitting || _isRestoring
-                                      ? const SizedBox(
-                                          width: 20,
-                                          height: 20,
-                                          child: CircularProgressIndicator(
-                                            strokeWidth: 2,
-                                          ),
-                                        )
-                                      : const Icon(
-                                          Icons.arrow_forward_rounded,
-                                          size: 19,
-                                        ),
-                                  label: Text(
-                                    _authError == null
-                                        ? 'Sign in'
-                                        : 'Try again',
+                            ),
+                            const SizedBox(height: 28),
+
+                            // Heading
+                            Text(
+                              'Welcome back',
+                              style: Theme.of(context).textTheme.headlineLarge,
+                            ),
+                            const SizedBox(height: 6),
+                            const Text(
+                              'Enter your credentials to access your fleet.',
+                              style: TextStyle(
+                                color: AppTheme.mutedInk,
+                                fontSize: 13,
+                              ),
+                            ),
+                            const SizedBox(height: 28),
+
+                            // Email Field
+                            const _FieldLabel('Work email'),
+                            Semantics(
+                              container: true,
+                              label: 'Work email',
+                              textField: true,
+                              child: TextFormField(
+                                controller: _emailController,
+                                keyboardType: TextInputType.emailAddress,
+                                autofillHints: const [AutofillHints.username],
+                                textInputAction: TextInputAction.next,
+                                decoration: const InputDecoration(
+                                  hintText: 'name@company.com',
+                                  prefixIcon: Icon(
+                                    Icons.alternate_email_rounded,
+                                    size: 19,
+                                    color: AppTheme.mutedInk,
                                   ),
-                                  style: FilledButton.styleFrom(
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(13),
+                                ),
+                                validator: (value) {
+                                  final email = value?.trim() ?? '';
+                                  if (email.isEmpty) {
+                                    return 'Enter your work email.';
+                                  }
+                                  if (!RegExp(r'^.+@.+\..+$').hasMatch(email)) {
+                                    return 'Enter a valid email address.';
+                                  }
+                                  return null;
+                                },
+                              ),
+                            ),
+                            const SizedBox(height: 18),
+
+                            // Password Field
+                            const _FieldLabel('Password'),
+                            Semantics(
+                              container: true,
+                              label: 'Password',
+                              textField: true,
+                              child: TextFormField(
+                                controller: _passwordController,
+                                obscureText: _obscurePassword,
+                                autofillHints: const [AutofillHints.password],
+                                onFieldSubmitted: (_) => _signIn(),
+                                decoration: InputDecoration(
+                                  hintText: '••••••••••••',
+                                  prefixIcon: const Icon(
+                                    Icons.lock_outline_rounded,
+                                    size: 19,
+                                    color: AppTheme.mutedInk,
+                                  ),
+                                  suffixIcon: IconButton(
+                                    tooltip: _obscurePassword
+                                        ? 'Show password'
+                                        : 'Hide password',
+                                    onPressed: () => setState(
+                                      () => _obscurePassword = !_obscurePassword,
+                                    ),
+                                    icon: Icon(
+                                      _obscurePassword
+                                          ? Icons.visibility_outlined
+                                          : Icons.visibility_off_outlined,
+                                      size: 19,
+                                      color: AppTheme.mutedInk,
                                     ),
                                   ),
                                 ),
+                                validator: (value) => (value?.isEmpty ?? true)
+                                    ? 'Enter a password to continue.'
+                                    : null,
                               ),
-                              const SizedBox(height: 20),
-                              const _SecureNote(),
-                              const SizedBox(height: 26),
-                              const Center(
-                                child: Text(
-                                  '© 2026 Stark Group',
-                                  style: TextStyle(
-                                    color: Color(0xFF98A2B3),
-                                    fontSize: 12,
+                            ),
+                            const SizedBox(height: 20),
+
+                            // Error states
+                            if (_authError != null) ...[
+                              Semantics(
+                                liveRegion: true,
+                                child: Container(
+                                  margin: const EdgeInsets.only(bottom: 16),
+                                  padding: const EdgeInsets.all(12),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFFEF2F2),
+                                    borderRadius: BorderRadius.circular(10),
+                                    border: Border.all(
+                                      color: const Color(0xFFFCA5A5),
+                                    ),
+                                  ),
+                                  child: Row(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      const Icon(
+                                        Icons.error_outline_rounded,
+                                        color: Color(0xFFDC2626),
+                                        size: 18,
+                                      ),
+                                      const SizedBox(width: 9),
+                                      Expanded(
+                                        child: Text(
+                                          _authError!,
+                                          style: const TextStyle(
+                                            color: Color(0xFF991B1B),
+                                            fontSize: 12,
+                                            height: 1.4,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ),
                               ),
                             ],
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _WelcomePanel extends StatelessWidget {
-  const _WelcomePanel();
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.all(16),
-      padding: const EdgeInsets.fromLTRB(42, 34, 42, 28),
-      decoration: BoxDecoration(
-        color: AppTheme.navy,
-        borderRadius: BorderRadius.circular(28),
-        gradient: const LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [Color(0xFF10243B), Color(0xFF143C53), Color(0xFF087F8C)],
-        ),
-      ),
-      child: Stack(
-        children: [
-          Positioned(
-            right: -88,
-            top: 80,
-            child: Container(
-              width: 260,
-              height: 260,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(color: Colors.white.withValues(alpha: .08)),
-              ),
-            ),
-          ),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  const _BrandLockup(dark: false),
-                  const Spacer(),
-                  _PortalBadge(compact: false, light: true),
-                ],
-              ),
-              const Spacer(flex: 2),
-              const _PanelEyebrow(),
-              const SizedBox(height: 18),
-              const Text(
-                'A clearer view\nof every vehicle.',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 40,
-                  height: 1.08,
-                  letterSpacing: -1.4,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-              const SizedBox(height: 14),
-              const SizedBox(
-                width: 430,
-                child: Text(
-                  'Keep the details that move your operation together in one calm, focused workspace.',
-                  style: TextStyle(
-                    color: Color(0xFFD5E4E9),
-                    fontSize: 15,
-                    height: 1.6,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 20),
-              const Expanded(flex: 5, child: _FleetPreview()),
-              const Spacer(),
-              const Row(
-                children: [
-                  Icon(
-                    Icons.shield_outlined,
-                    color: Color(0xFF9ADCDD),
-                    size: 16,
-                  ),
-                  SizedBox(width: 8),
-                  Text(
-                    'STARK GROUP  ·  FLEET OPERATIONS',
-                    style: TextStyle(
-                      color: Color(0xFFC3D6DC),
-                      fontSize: 10,
-                      letterSpacing: 1.15,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _BrandLockup extends StatelessWidget {
-  const _BrandLockup({required this.dark});
-
-  final bool dark;
-
-  @override
-  Widget build(BuildContext context) {
-    final color = dark ? AppTheme.navy : Colors.white;
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Container(
-          width: 40,
-          height: 40,
-          decoration: BoxDecoration(
-            color: AppTheme.teal,
-            borderRadius: BorderRadius.circular(11),
-          ),
-          child: const Icon(
-            Icons.local_shipping_rounded,
-            color: Colors.white,
-            size: 22,
-          ),
-        ),
-        const SizedBox(width: 11),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'STARK',
-              style: TextStyle(
-                color: color,
-                fontWeight: FontWeight.w800,
-                letterSpacing: 1.5,
-              ),
-            ),
-            Text(
-              'FLEET',
-              style: TextStyle(
-                color: dark ? AppTheme.mutedInk : const Color(0xFFB3C6D6),
-                fontSize: 10,
-                letterSpacing: 2.1,
-              ),
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-}
-
-class _PortalBadge extends StatelessWidget {
-  const _PortalBadge({required this.compact, this.light = false});
-
-  final bool compact;
-  final bool light;
-
-  @override
-  Widget build(BuildContext context) {
-    final foreground = light ? const Color(0xFFD9F3F1) : AppTheme.teal;
-    final background = light
-        ? Colors.white.withValues(alpha: 0.1)
-        : const Color(0xFFE8F6F5);
-    return Container(
-      padding: EdgeInsets.symmetric(
-        horizontal: compact ? 9 : 12,
-        vertical: compact ? 7 : 9,
-      ),
-      decoration: BoxDecoration(
-        color: background,
-        borderRadius: BorderRadius.circular(30),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(Icons.lock_outline_rounded, size: 14, color: foreground),
-          if (!compact) ...[
-            const SizedBox(width: 7),
-            Text(
-              'VMS WORKSPACE',
-              style: TextStyle(
-                color: foreground,
-                fontSize: 10,
-                fontWeight: FontWeight.w700,
-                letterSpacing: 1,
-              ),
-            ),
-          ],
-        ],
-      ),
-    );
-  }
-}
-
-class _PanelEyebrow extends StatelessWidget {
-  const _PanelEyebrow();
-
-  @override
-  Widget build(BuildContext context) => Row(
-    children: [
-      Container(width: 24, height: 1, color: const Color(0xFF82D0D1)),
-      const SizedBox(width: 10),
-      const Text(
-        'FLEET OPERATIONS, IN FOCUS',
-        style: TextStyle(
-          color: Color(0xFF9ADCDD),
-          fontSize: 10,
-          letterSpacing: 1.5,
-          fontWeight: FontWeight.w700,
-        ),
-      ),
-    ],
-  );
-}
-
-class _FleetPreview extends StatelessWidget {
-  const _FleetPreview();
-
-  @override
-  Widget build(BuildContext context) {
-    return ExcludeSemantics(
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          final compact = constraints.maxWidth < 500;
-          return Stack(
-            clipBehavior: Clip.none,
-            children: [
-              Positioned.fill(child: CustomPaint(painter: _RoutePainter())),
-              Positioned(
-                right: compact ? -3 : 6,
-                top: 0,
-                child: _FloatingTag(compact: compact),
-              ),
-              Align(
-                alignment: Alignment.centerLeft,
-                child: Container(
-                  width: constraints.maxWidth * (compact ? .97 : .91),
-                  padding: EdgeInsets.all(compact ? 17 : 22),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF12324A).withValues(alpha: .88),
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(
-                      color: Colors.white.withValues(alpha: .18),
-                    ),
-                    boxShadow: const [
-                      BoxShadow(
-                        color: Color(0x33091B2B),
-                        blurRadius: 30,
-                        offset: Offset(0, 18),
-                      ),
-                    ],
-                  ),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Container(
-                            width: 34,
-                            height: 34,
-                            decoration: BoxDecoration(
-                              color: const Color(0xFF8BD2D0)
-                                  .withValues(alpha: .16),
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            child: const Icon(
-                              Icons.local_shipping_rounded,
-                              color: Color(0xFF9ADCDD),
-                              size: 18,
-                            ),
-                          ),
-                          const SizedBox(width: 11),
-                          const Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'FLEET OVERVIEW',
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.w700,
-                                    letterSpacing: 1,
+                            if (_restoreError != null) ...[
+                              Semantics(
+                                liveRegion: true,
+                                child: Container(
+                                  margin: const EdgeInsets.only(bottom: 16),
+                                  padding: const EdgeInsets.all(12),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFFEF2F2),
+                                    borderRadius: BorderRadius.circular(10),
+                                    border: Border.all(
+                                      color: const Color(0xFFFCA5A5),
+                                    ),
+                                  ),
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        _restoreError!,
+                                        style: const TextStyle(
+                                          color: Color(0xFF991B1B),
+                                          fontSize: 12,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 6),
+                                      TextButton.icon(
+                                        onPressed: _isRestoring ? null : _restoreSession,
+                                        icon: const Icon(Icons.refresh_rounded, size: 16),
+                                        label: const Text(
+                                          'Retry session restore',
+                                          style: TextStyle(fontSize: 12),
+                                        ),
+                                        style: TextButton.styleFrom(
+                                          visualDensity: VisualDensity.compact,
+                                          padding: EdgeInsets.zero,
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ),
-                                SizedBox(height: 3),
-                                Text(
-                                  'A single view of your vehicles',
-                                  style: TextStyle(
-                                    color: Color(0xFFB9CFD7),
-                                    fontSize: 11,
+                              ),
+                            ],
+
+                            // Cold-start progress bar if active
+                            if (_isRestoring || _isSubmitting) ...[
+                              const ServerRequestProgress(),
+                              const SizedBox(height: 16),
+                            ],
+
+                            // Submit Button
+                            SizedBox(
+                              height: 48,
+                              child: FilledButton.icon(
+                                onPressed: _isSubmitting || _isRestoring ? null : _signIn,
+                                icon: _isSubmitting || _isRestoring
+                                    ? const SizedBox(
+                                        width: 18,
+                                        height: 18,
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 2,
+                                          color: Colors.white,
+                                        ),
+                                      )
+                                    : const Icon(Icons.arrow_forward_rounded, size: 18),
+                                label: const Text('Sign in'),
+                                style: FilledButton.styleFrom(
+                                  backgroundColor: AppTheme.teal,
+                                  foregroundColor: Colors.white,
+                                  elevation: 0,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(10),
                                   ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          const Icon(
-                            Icons.more_horiz_rounded,
-                            color: Color(0xFFB9CFD7),
-                          ),
-                        ],
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        child: Divider(
-                          height: 1,
-                          color: Colors.white.withValues(alpha: .13),
-                        ),
-                      ),
-                      Wrap(
-                        spacing: 8,
-                        runSpacing: 8,
-                        children: const [
-                          _StatusTile(
-                            label: 'ACTIVE',
-                            color: Color(0xFF8BE0BB),
-                            icon: Icons.check_circle_outline_rounded,
-                          ),
-                          _StatusTile(
-                            label: 'IN MAINTENANCE',
-                            color: Color(0xFFF4CC84),
-                            icon: Icons.build_outlined,
-                          ),
-                          _StatusTile(
-                            label: 'INACTIVE',
-                            color: Color(0xFFB6C7D5),
-                            icon: Icons.pause_circle_outline_rounded,
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 18),
-                      Row(
-                        children: [
-                          for (var index = 0; index < 4; index++) ...[
-                            Expanded(
-                              child: Container(
-                                height: 5,
-                                decoration: BoxDecoration(
-                                  color: Colors.white.withValues(
-                                    alpha: index == 0 ? .62 : .14,
-                                  ),
-                                  borderRadius: BorderRadius.circular(8),
                                 ),
                               ),
                             ),
-                            if (index < 3) const SizedBox(width: 7),
+                            const SizedBox(height: 24),
+
+                            // Security Assurance Tag
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 9,
+                              ),
+                              decoration: BoxDecoration(
+                                color: AppTheme.surfaceAlt,
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: const Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(
+                                    Icons.lock_rounded,
+                                    size: 13,
+                                    color: AppTheme.mutedInk,
+                                  ),
+                                  SizedBox(width: 7),
+                                  Text(
+                                    'Encrypted enterprise session',
+                                    style: TextStyle(
+                                      color: AppTheme.mutedInk,
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(height: 16),
+                            const Center(
+                              child: Text(
+                                '© Stark Fleet Systems',
+                                style: TextStyle(
+                                  color: AppTheme.subtleInk,
+                                  fontSize: 11,
+                                ),
+                              ),
+                            ),
                           ],
-                        ],
+                        ),
                       ),
-                    ],
+                    ),
                   ),
                 ),
               ),
-            ],
-          );
-        },
+            ),
+          ],
+        ),
       ),
     );
   }
 }
 
-class _StatusTile extends StatelessWidget {
-  const _StatusTile({
-    required this.label,
-    required this.color,
-    required this.icon,
-  });
-
-  final String label;
-  final Color color;
-  final IconData icon;
+class _HeroTelemetryPanel extends StatelessWidget {
+  const _HeroTelemetryPanel();
 
   @override
-  Widget build(BuildContext context) => Container(
-    padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 8),
-    decoration: BoxDecoration(
-      color: Colors.white.withValues(alpha: .07),
-      borderRadius: BorderRadius.circular(9),
-      border: Border.all(color: Colors.white.withValues(alpha: .08)),
-    ),
-    child: Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Icon(icon, color: color, size: 14),
-        const SizedBox(width: 6),
-        Text(
-          label,
-          style: TextStyle(
-            color: color,
-            fontSize: 9,
-            fontWeight: FontWeight.w700,
-            letterSpacing: .4,
-          ),
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(40),
+      decoration: BoxDecoration(
+        color: AppTheme.navy,
+        borderRadius: BorderRadius.circular(28),
+        gradient: const RadialGradient(
+          center: Alignment(0.8, -0.6),
+          radius: 1.4,
+          colors: [
+            Color(0xFF1E3A5F),
+            Color(0xFF0F1E36),
+            Color(0xFF0A1220),
+          ],
         ),
-      ],
-    ),
-  );
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Top Logo
+          const _BrandBadge(isLight: true),
+          const Spacer(flex: 2),
+
+          // Eyebrow
+          Row(
+            children: [
+              Container(
+                width: 8,
+                height: 8,
+                decoration: const BoxDecoration(
+                  color: Color(0xFF10B981),
+                  shape: BoxShape.circle,
+                ),
+              ),
+              const SizedBox(width: 8),
+              const Text(
+                'FLEET TELEMETRY & OPERATIONS',
+                style: TextStyle(
+                  color: Color(0xFF67E8F9),
+                  fontSize: 11,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 1.5,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+
+          // Main Headline
+          const Text(
+            'Complete visibility\nfor every asset.',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 38,
+              height: 1.15,
+              fontWeight: FontWeight.w800,
+              letterSpacing: -1.2,
+            ),
+          ),
+          const SizedBox(height: 12),
+          ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 440),
+            child: const Text(
+              'Real-time vehicle register, status diagnostics, and centralized fleet controls built for enterprise precision.',
+              style: TextStyle(
+                color: Color(0xFF94A3B8),
+                fontSize: 14,
+                height: 1.6,
+              ),
+            ),
+          ),
+          const SizedBox(height: 28),
+
+          // Live Operations Preview Card
+          const Expanded(flex: 5, child: _LiveFleetHudCard()),
+          const Spacer(),
+
+          // Trust Badges
+          Row(
+            children: [
+              const Icon(
+                Icons.check_circle_outline_rounded,
+                color: Color(0xFF2DD4BF),
+                size: 15,
+              ),
+              const SizedBox(width: 6),
+              const Text(
+                'Live Cloud Sync',
+                style: TextStyle(color: Color(0xFFCBD5E1), fontSize: 11),
+              ),
+              const SizedBox(width: 20),
+              const Icon(
+                Icons.security_rounded,
+                color: Color(0xFF2DD4BF),
+                size: 15,
+              ),
+              const SizedBox(width: 6),
+              const Text(
+                'Multi-Tenant Isolation',
+                style: TextStyle(color: Color(0xFFCBD5E1), fontSize: 11),
+              ),
+              const SizedBox(width: 20),
+              const Icon(
+                Icons.speed_rounded,
+                color: Color(0xFF2DD4BF),
+                size: 15,
+              ),
+              const SizedBox(width: 6),
+              const Text(
+                'Sub-second Latency',
+                style: TextStyle(color: Color(0xFFCBD5E1), fontSize: 11),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
 }
 
-class _FloatingTag extends StatelessWidget {
-  const _FloatingTag({required this.compact});
-
-  final bool compact;
+class _LiveFleetHudCard extends StatelessWidget {
+  const _LiveFleetHudCard();
 
   @override
-  Widget build(BuildContext context) => Container(
-    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-    decoration: BoxDecoration(
-      color: const Color(0xFFD8F3EC),
-      borderRadius: BorderRadius.circular(10),
-      boxShadow: const [
-        BoxShadow(
-          color: Color(0x22091B2B),
-          blurRadius: 16,
-          offset: Offset(0, 6),
-        ),
-      ],
-    ),
-    child: Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        const Icon(Icons.route_rounded, color: AppTheme.teal, size: 15),
-        if (!compact) ...[
-          const SizedBox(width: 6),
-          const Text(
-            'BUILT FOR YOUR FLEET',
-            style: TextStyle(
-              color: AppTheme.navy,
-              fontSize: 9,
-              fontWeight: FontWeight.w700,
-              letterSpacing: .6,
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(22),
+      decoration: BoxDecoration(
+        color: const Color(0xFF132238).withValues(alpha: 0.8),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.12)),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x33000000),
+            blurRadius: 28,
+            offset: Offset(0, 14),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // HUD Top Row
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    width: 32,
+                    height: 32,
+                    decoration: BoxDecoration(
+                      color: AppTheme.teal.withValues(alpha: 0.2),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: const Icon(
+                      Icons.hub_outlined,
+                      color: Color(0xFF2DD4BF),
+                      size: 18,
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  const Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'OPERATIONS COMMAND',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 11,
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: 0.8,
+                        ),
+                      ),
+                      Text(
+                        'Automated Health & Status Monitor',
+                        style: TextStyle(
+                          color: Color(0xFF94A3B8),
+                          fontSize: 10,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF059669).withValues(alpha: 0.18),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: const Color(0xFF10B981).withValues(alpha: 0.3),
+                  ),
+                ),
+                child: const Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.circle,
+                      size: 6,
+                      color: Color(0xFF10B981),
+                    ),
+                    SizedBox(width: 5),
+                    Text(
+                      'SYSTEM READY',
+                      style: TextStyle(
+                        color: Color(0xFF6EE7B7),
+                        fontSize: 9,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 20),
+
+          // 3 Metric HUD Tiles
+          Row(
+            children: [
+              Expanded(
+                child: _HudMetricTile(
+                  label: 'OPERATIONAL',
+                  value: '98.2%',
+                  icon: Icons.check_circle_outline_rounded,
+                  color: const Color(0xFF10B981),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: _HudMetricTile(
+                  label: 'ACTIVE FLEET',
+                  value: 'Ready',
+                  icon: Icons.local_shipping_outlined,
+                  color: const Color(0xFF0EA5E9),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: _HudMetricTile(
+                  label: 'SERVICING',
+                  value: 'Scheduled',
+                  icon: Icons.build_circle_outlined,
+                  color: const Color(0xFFF59E0B),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 18),
+
+          // Route Vector Canvas Preview
+          Expanded(
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(12),
+              child: Container(
+                color: const Color(0xFF0A1424),
+                child: CustomPaint(
+                  painter: _HudGridPainter(),
+                  child: Center(
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        _VehicleNodePill(
+                          tag: 'METRO-401',
+                          status: 'ACTIVE',
+                          color: const Color(0xFF10B981),
+                        ),
+                        _VehicleNodePill(
+                          tag: 'FREIGHT-88',
+                          status: 'IN TRANSIT',
+                          color: const Color(0xFF0EA5E9),
+                        ),
+                        _VehicleNodePill(
+                          tag: 'LOGIX-12',
+                          status: 'STANDBY',
+                          color: const Color(0xFF94A3B8),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
             ),
           ),
         ],
-      ],
-    ),
-  );
+      ),
+    );
+  }
 }
 
-class _RoutePainter extends CustomPainter {
+class _HudMetricTile extends StatelessWidget {
+  const _HudMetricTile({
+    required this.label,
+    required this.value,
+    required this.icon,
+    required this.color,
+  });
+
+  final String label;
+  final String value;
+  final IconData icon;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.04),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.06)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(icon, size: 13, color: color),
+              const SizedBox(width: 5),
+              Text(
+                label,
+                style: const TextStyle(
+                  color: Color(0xFF94A3B8),
+                  fontSize: 9,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 0.6,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          Text(
+            value,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 15,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _VehicleNodePill extends StatelessWidget {
+  const _VehicleNodePill({
+    required this.tag,
+    required this.status,
+    required this.color,
+  });
+
+  final String tag;
+  final String status;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: const Color(0xFF132238),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: color.withValues(alpha: 0.4)),
+        boxShadow: [
+          BoxShadow(
+            color: color.withValues(alpha: 0.15),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            tag,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 11,
+              fontWeight: FontWeight.w700,
+              fontFamilyFallback: ['monospace', 'Courier'],
+            ),
+          ),
+          const SizedBox(height: 2),
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 5,
+                height: 5,
+                decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+              ),
+              const SizedBox(width: 4),
+              Text(
+                status,
+                style: TextStyle(
+                  color: color,
+                  fontSize: 8,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 0.4,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _HudGridPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
-    final path = Path()
-      ..moveTo(size.width * .08, size.height * .75)
-      ..cubicTo(
-        size.width * .28,
-        size.height * .16,
-        size.width * .48,
-        size.height * 1.08,
-        size.width * .68,
-        size.height * .46,
-      )
-      ..cubicTo(
-        size.width * .79,
-        size.height * .12,
-        size.width * .87,
-        size.height * .27,
-        size.width * .98,
-        size.height * .06,
-      );
-    final routePaint = Paint()
-      ..color = Colors.white.withValues(alpha: .17)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 2;
-    canvas.drawPath(path, routePaint);
-    for (final point in [
-      Offset(size.width * .08, size.height * .75),
-      Offset(size.width * .68, size.height * .46),
-      Offset(size.width * .98, size.height * .06),
-    ]) {
-      canvas.drawCircle(point, 5, Paint()..color = const Color(0xFF9ADCDD));
-      canvas.drawCircle(point, 10, Paint()..color = const Color(0x269ADCDD));
+    final linePaint = Paint()
+      ..color = const Color(0xFF1E3A5F).withValues(alpha: 0.25)
+      ..strokeWidth = 1;
+
+    const step = 24.0;
+    for (double x = 0; x < size.width; x += step) {
+      canvas.drawLine(Offset(x, 0), Offset(x, size.height), linePaint);
     }
+    for (double y = 0; y < size.height; y += step) {
+      canvas.drawLine(Offset(0, y), Offset(size.width, y), linePaint);
+    }
+
+    // Connect node path
+    final pathPaint = Paint()
+      ..color = const Color(0xFF0EA5E9).withValues(alpha: 0.4)
+      ..strokeWidth = 1.5
+      ..style = PaintingStyle.stroke;
+
+    final path = Path()
+      ..moveTo(size.width * 0.2, size.height * 0.5)
+      ..lineTo(size.width * 0.5, size.height * 0.5)
+      ..lineTo(size.width * 0.8, size.height * 0.5);
+
+    canvas.drawPath(path, pathPaint);
   }
 
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
-class _SecureNote extends StatelessWidget {
-  const _SecureNote();
+class _BrandBadge extends StatelessWidget {
+  const _BrandBadge({this.isLight = false});
+
+  final bool isLight;
 
   @override
-  Widget build(BuildContext context) => Container(
-    padding: const EdgeInsets.all(13),
-    decoration: BoxDecoration(
-      color: const Color(0xFFF2F8F8),
-      borderRadius: BorderRadius.circular(12),
-    ),
-    child: const Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
+  Widget build(BuildContext context) {
+    final titleColor = isLight ? Colors.white : AppTheme.navy;
+    final subtitleColor = isLight ? const Color(0xFF94A3B8) : AppTheme.mutedInk;
+
+    return Row(
+      mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(Icons.shield_outlined, color: AppTheme.teal, size: 19),
-        SizedBox(width: 10),
-        Expanded(
-          child: Text(
-            'Use your VMS account credentials to access your secure workspace.',
-            style: TextStyle(
-              color: AppTheme.mutedInk,
-              fontSize: 12,
-              height: 1.45,
+        Container(
+          width: 36,
+          height: 36,
+          decoration: BoxDecoration(
+            color: AppTheme.teal,
+            borderRadius: BorderRadius.circular(10),
+            gradient: const LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [Color(0xFF0EA5E9), Color(0xFF088395)],
             ),
+            boxShadow: const [
+              BoxShadow(
+                color: Color(0x33088395),
+                blurRadius: 8,
+                offset: Offset(0, 3),
+              ),
+            ],
+          ),
+          child: const Icon(
+            Icons.local_shipping_rounded,
+            color: Colors.white,
+            size: 20,
           ),
         ),
+        const SizedBox(width: 10),
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              'STARK',
+              style: TextStyle(
+                color: titleColor,
+                fontWeight: FontWeight.w800,
+                fontSize: 14,
+                letterSpacing: 1.2,
+              ),
+            ),
+            Text(
+              'FLEET',
+              style: TextStyle(
+                color: subtitleColor,
+                fontSize: 9,
+                fontWeight: FontWeight.w700,
+                letterSpacing: 1.8,
+              ),
+            ),
+          ],
+        ),
       ],
-    ),
-  );
+    );
+  }
 }
 
 class _FieldLabel extends StatelessWidget {
@@ -854,7 +947,14 @@ class _FieldLabel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Padding(
-    padding: const EdgeInsets.only(bottom: 8),
-    child: Text(label, style: Theme.of(context).textTheme.labelLarge),
+    padding: const EdgeInsets.only(bottom: 7),
+    child: Text(
+      label,
+      style: const TextStyle(
+        color: AppTheme.ink,
+        fontSize: 13,
+        fontWeight: FontWeight.w600,
+      ),
+    ),
   );
 }
