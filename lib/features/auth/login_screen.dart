@@ -258,7 +258,7 @@ class _LoginScreenState extends State<LoginScreen>
                                       autofillHints: const [AutofillHints.username],
                                       textInputAction: TextInputAction.next,
                                       decoration: InputDecoration(
-                                        hintText: 'Enter username or email',
+                                        hintText: 'e.g. admin@stark.com',
                                         prefixIcon: const Icon(
                                           Icons.person_outline_rounded,
                                           size: 19,

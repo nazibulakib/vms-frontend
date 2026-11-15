@@ -130,7 +130,7 @@ class _VehicleListScreenState extends State<VehicleListScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  // Filter Toolbar (Filter... search + All dropdown + Filter list button)
+                  // Filter Toolbar (Search input + Status dropdown + Filter button)
                   Padding(
                     padding: const EdgeInsets.all(16),
                     child: Wrap(
@@ -138,14 +138,14 @@ class _VehicleListScreenState extends State<VehicleListScreen> {
                       runSpacing: 10,
                       crossAxisAlignment: WrapCrossAlignment.center,
                       children: [
-                        // "Filter..." Search input
+                        // Search input
                         SizedBox(
                           width: width < 600 ? width - 64 : 240,
                           child: TextField(
                             controller: _searchController,
                             onChanged: (val) => setState(() => _query = val),
                             decoration: InputDecoration(
-                              hintText: 'Filter...',
+                              hintText: 'Search vehicles...',
                               contentPadding: const EdgeInsets.symmetric(
                                 horizontal: 12,
                                 vertical: 10,
@@ -159,7 +159,7 @@ class _VehicleListScreenState extends State<VehicleListScreen> {
                           ),
                         ),
 
-                        // "All" Dropdown
+                        // Status Dropdown
                         SizedBox(
                           width: width < 600 ? width - 64 : 160,
                           child: DropdownButtonFormField<VehicleStatus?>(
@@ -174,7 +174,7 @@ class _VehicleListScreenState extends State<VehicleListScreen> {
                             items: [
                               const DropdownMenuItem<VehicleStatus?>(
                                 value: null,
-                                child: Text('All'),
+                                child: Text('All Statuses'),
                               ),
                               ...VehicleStatus.values.map(
                                 (s) => DropdownMenuItem<VehicleStatus?>(
@@ -188,13 +188,13 @@ class _VehicleListScreenState extends State<VehicleListScreen> {
                           ),
                         ),
 
-                        // "Filter list" button with funnel icon
+                        // Filter button
                         FilledButton.icon(
                           onPressed: () {
                             // Focus or refresh filtering
                           },
-                          icon: const Icon(Icons.filter_alt_outlined, size: 16),
-                          label: const Text('Filter list'),
+                          icon: const Icon(Icons.tune_rounded, size: 16),
+                          label: const Text('Filter'),
                           style: FilledButton.styleFrom(
                             backgroundColor: AppTheme.starkBlue,
                             foregroundColor: Colors.white,
@@ -217,7 +217,7 @@ class _VehicleListScreenState extends State<VehicleListScreen> {
                                 _statusFilter = null;
                               });
                             },
-                            child: const Text('Reset'),
+                            child: const Text('Clear'),
                           ),
                       ],
                     ),

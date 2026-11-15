@@ -64,30 +64,46 @@ class _AppShellState extends State<AppShell> {
   }
 
   Future<void> _openForm({Vehicle? vehicle}) async {
-    final result = await Navigator.of(context).push<Vehicle>(
-      MaterialPageRoute<Vehicle>(
+    final result = await Navigator.of(context).push<dynamic>(
+      MaterialPageRoute<dynamic>(
         builder: (_) => VehicleFormScreen(
           vehicle: vehicle,
           onSave: (draft) => vehicle == null
               ? _vehicleRepository.createVehicle(draft)
               : _vehicleRepository.updateVehicle(draft),
+          onNavigateToDashboard: () {
+            if (mounted) setState(() => _selectedTabIndex = 0);
+          },
+          onNavigateToVehicles: () {
+            if (mounted) setState(() => _selectedTabIndex = 1);
+          },
         ),
       ),
     );
     if (result == null || !mounted) return;
-    setState(() {
-      _vehicles = [..._vehicles.where((item) => item.id != result.id), result]
-        ..sort((a, b) => a.vehicleNumber.compareTo(b.vehicleNumber));
-    });
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          vehicle == null
-              ? 'Vehicle registered successfully.'
-              : 'Vehicle updated successfully.',
+    if (result == 'nav_dashboard') {
+      setState(() => _selectedTabIndex = 0);
+      return;
+    }
+    if (result == 'nav_vehicles') {
+      setState(() => _selectedTabIndex = 1);
+      return;
+    }
+    if (result is Vehicle) {
+      setState(() {
+        _vehicles = [..._vehicles.where((item) => item.id != result.id), result]
+          ..sort((a, b) => a.vehicleNumber.compareTo(b.vehicleNumber));
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            vehicle == null
+                ? 'Vehicle registered successfully.'
+                : 'Vehicle updated successfully.',
+          ),
         ),
-      ),
-    );
+      );
+    }
   }
 
   Future<void> _deleteVehicle(Vehicle vehicle) async {
@@ -265,7 +281,7 @@ class _AppShellState extends State<AppShell> {
           if (isDesktop)
             SizedBox(
               width: 220,
-              child: Container(
+              child: Material(
                 color: AppTheme.starkNavy,
                 child: SafeArea(
                   child: _SidebarContent(
@@ -475,22 +491,25 @@ class _SidebarContent extends StatelessWidget {
         // Sign out button
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
-          child: ListTile(
-            leading: const Icon(
-              Icons.logout_rounded,
-              color: Color(0xFF98A6C0),
-              size: 20,
-            ),
-            title: const Text(
-              'Sign out',
-              style: TextStyle(
+          child: Material(
+            color: Colors.transparent,
+            child: ListTile(
+              leading: const Icon(
+                Icons.logout_rounded,
                 color: Color(0xFF98A6C0),
-                fontSize: 13,
-                fontWeight: FontWeight.w500,
+                size: 20,
               ),
+              title: const Text(
+                'Sign out',
+                style: TextStyle(
+                  color: Color(0xFF98A6C0),
+                  fontSize: 13,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+              onTap: onSignOut,
             ),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
-            onTap: onSignOut,
           ),
         ),
       ],
@@ -515,27 +534,28 @@ class _SidebarNavItem extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 12),
-      decoration: BoxDecoration(
+      child: Material(
         color: isSelected ? AppTheme.starkBlue : Colors.transparent,
         borderRadius: BorderRadius.circular(6),
-      ),
-      child: ListTile(
-        dense: true,
-        leading: Icon(
-          icon,
-          color: isSelected ? Colors.white : const Color(0xFFB0BDD6),
-          size: 20,
-        ),
-        title: Text(
-          label,
-          style: TextStyle(
+        child: ListTile(
+          dense: true,
+          leading: Icon(
+            icon,
             color: isSelected ? Colors.white : const Color(0xFFB0BDD6),
-            fontSize: 13,
-            fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+            size: 20,
           ),
+          title: Text(
+            label,
+            style: TextStyle(
+              color: isSelected ? Colors.white : const Color(0xFFB0BDD6),
+              fontSize: 13,
+              fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+            ),
+          ),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+          hoverColor: isSelected ? AppTheme.starkBlue : Colors.white.withValues(alpha: 0.08),
+          onTap: onTap,
         ),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
-        onTap: onTap,
       ),
     );
   }

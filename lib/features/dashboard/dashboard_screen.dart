@@ -282,7 +282,7 @@ class _KpiMetricRow extends StatelessWidget {
           children: [
             _KpiMetricCard(
               width: cardWidth,
-              title: 'Active Operations',
+              title: 'Active',
               value: '$activeCount',
               subtitle: '${operationalRate.toStringAsFixed(1)}% of fleet',
               icon: Icons.check_circle_outline_rounded,
@@ -302,7 +302,7 @@ class _KpiMetricRow extends StatelessWidget {
             ),
             _KpiMetricCard(
               width: cardWidth,
-              title: 'Inactive / Standby',
+              title: 'Inactive',
               value: '$inactiveCount',
               subtitle: 'Available reserve',
               icon: Icons.pause_circle_outline_rounded,
@@ -910,7 +910,7 @@ class _QuickActionCard extends StatelessWidget {
               const Icon(Icons.flash_on_rounded, size: 18, color: AppTheme.starkBlue),
               const SizedBox(width: 8),
               const Text(
-                'Fleet Management',
+                'Quick Actions',
                 style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w700,

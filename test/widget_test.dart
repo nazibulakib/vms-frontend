@@ -81,9 +81,9 @@ void main() {
     expect(find.text('New Vehicle'), findsOneWidget);
 
     // Check 4 Key KPI Cards
-    expect(find.text('Active Operations'), findsOneWidget);
+    expect(find.text('Active'), findsWidgets);
     expect(find.text('In Maintenance'), findsWidgets);
-    expect(find.text('Inactive / Standby'), findsOneWidget);
+    expect(find.text('Inactive'), findsWidgets);
     expect(find.text('Total Fleet'), findsOneWidget);
 
     // Check Chart Headings
@@ -144,8 +144,8 @@ void main() {
     expect(find.text('New Vehicle'), findsOneWidget);
 
     // Check Filter Bar
-    expect(find.text('Filter...'), findsOneWidget);
-    expect(find.text('Filter list'), findsOneWidget);
+    expect(find.text('Search vehicles...'), findsOneWidget);
+    expect(find.text('Filter'), findsOneWidget);
 
     // Check Table Content
     expect(find.text('00000001'), findsOneWidget);
@@ -233,11 +233,12 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('Register / Update Vehicle'), findsOneWidget);
+    expect(find.text('Register Vehicle'), findsOneWidget);
     expect(find.text('Vehicle Number'), findsOneWidget);
     expect(find.text('Type'), findsOneWidget);
     expect(find.text('Brand'), findsOneWidget);
     expect(find.text('Model'), findsOneWidget);
+    expect(find.text('Company'), findsOneWidget);
     expect(find.text('Save'), findsOneWidget);
 
     // Tap Save button to trigger validation
@@ -249,5 +250,37 @@ void main() {
     expect(find.text('Enter the vehicle type.'), findsOneWidget);
     expect(find.text('Enter the brand.'), findsOneWidget);
     expect(find.text('Enter the model.'), findsOneWidget);
+  });
+
+  testWidgets('VehicleFormScreen left panel Dashboard button triggers navigation', (
+    WidgetTester tester,
+  ) async {
+    tester.view.physicalSize = const Size(1280, 1000);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(() {
+      tester.view.resetPhysicalSize();
+      tester.view.resetDevicePixelRatio();
+    });
+
+    bool navigatedToDashboard = false;
+
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: AppTheme.lightTheme,
+        home: VehicleFormScreen(
+          onSave: (v) async => v,
+          onNavigateToDashboard: () {
+            navigatedToDashboard = true;
+          },
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Dashboard'), findsOneWidget);
+    await tester.tap(find.text('Dashboard'));
+    await tester.pumpAndSettle();
+
+    expect(navigatedToDashboard, isTrue);
   });
 }

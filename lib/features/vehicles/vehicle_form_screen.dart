@@ -5,10 +5,18 @@ import 'package:vms_frontend/features/vehicles/data/vehicle_api_exception.dart';
 import 'package:vms_frontend/shared/widgets/server_request_progress.dart';
 
 class VehicleFormScreen extends StatefulWidget {
-  const VehicleFormScreen({super.key, this.vehicle, required this.onSave});
+  const VehicleFormScreen({
+    super.key,
+    this.vehicle,
+    required this.onSave,
+    this.onNavigateToDashboard,
+    this.onNavigateToVehicles,
+  });
 
   final Vehicle? vehicle;
   final Future<Vehicle> Function(Vehicle vehicle) onSave;
+  final VoidCallback? onNavigateToDashboard;
+  final VoidCallback? onNavigateToVehicles;
 
   @override
   State<VehicleFormScreen> createState() => _VehicleFormScreenState();
@@ -97,7 +105,7 @@ class _VehicleFormScreenState extends State<VehicleFormScreen> {
     final formContent = ListView(
       padding: EdgeInsets.all(width < 600 ? 16 : 28),
       children: [
-        // Page Title matching Stark Guideline Right Mockup
+        // Page Title
         Row(
           children: [
             IconButton(
@@ -107,7 +115,7 @@ class _VehicleFormScreenState extends State<VehicleFormScreen> {
             ),
             const SizedBox(width: 4),
             Text(
-              _isEditing ? 'Update Vehicle' : 'Register / Update Vehicle',
+              _isEditing ? 'Edit Vehicle' : 'Register Vehicle',
               style: const TextStyle(
                 fontSize: 22,
                 fontWeight: FontWeight.w700,
@@ -141,7 +149,7 @@ class _VehicleFormScreenState extends State<VehicleFormScreen> {
                     textCapitalization: TextCapitalization.characters,
                     textInputAction: TextInputAction.next,
                     decoration: const InputDecoration(
-                      hintText: 'Enter vehicle number.',
+                      hintText: 'e.g. DHAKA-METRO-GA-11-4821',
                     ),
                     validator: (val) => _required(val, 'vehicle number'),
                   ),
@@ -188,7 +196,7 @@ class _VehicleFormScreenState extends State<VehicleFormScreen> {
                             controller: _brandController,
                             textInputAction: TextInputAction.next,
                             decoration: const InputDecoration(
-                              hintText: 'e.g. Brand 1 / Toyota',
+                              hintText: 'e.g. Toyota, Scania, Ford',
                             ),
                             validator: (val) => _required(val, 'brand'),
                           ),
@@ -229,7 +237,7 @@ class _VehicleFormScreenState extends State<VehicleFormScreen> {
                       controller: _brandController,
                       textInputAction: TextInputAction.next,
                       decoration: const InputDecoration(
-                        hintText: 'e.g. Brand 1 / Toyota',
+                        hintText: 'e.g. Toyota, Scania, Ford',
                       ),
                       validator: (val) => _required(val, 'brand'),
                     ),
@@ -237,7 +245,7 @@ class _VehicleFormScreenState extends State<VehicleFormScreen> {
                 ],
                 const SizedBox(height: 18),
 
-                // Row with Model and Assigned To / Company
+                // Row with Model and Company
                 if (twoColumns)
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -249,7 +257,7 @@ class _VehicleFormScreenState extends State<VehicleFormScreen> {
                             controller: _modelController,
                             textInputAction: TextInputAction.next,
                             decoration: const InputDecoration(
-                              hintText: 'e.g. Model X / Hiace',
+                              hintText: 'e.g. Hiace, Sprinter, Actros',
                             ),
                             validator: (val) => _required(val, 'model'),
                           ),
@@ -258,7 +266,7 @@ class _VehicleFormScreenState extends State<VehicleFormScreen> {
                       const SizedBox(width: 16),
                       Expanded(
                         child: _FieldLabel(
-                          label: 'Assigned To / Company',
+                          label: 'Company',
                           child: TextFormField(
                             controller: _companyController,
                             textInputAction: TextInputAction.done,
@@ -278,14 +286,14 @@ class _VehicleFormScreenState extends State<VehicleFormScreen> {
                       controller: _modelController,
                       textInputAction: TextInputAction.next,
                       decoration: const InputDecoration(
-                        hintText: 'e.g. Model X / Hiace',
+                        hintText: 'e.g. Hiace, Sprinter, Actros',
                       ),
                       validator: (val) => _required(val, 'model'),
                     ),
                   ),
                   const SizedBox(height: 18),
                   _FieldLabel(
-                    label: 'Assigned To / Company',
+                    label: 'Company',
                     child: TextFormField(
                       controller: _companyController,
                       textInputAction: TextInputAction.done,
@@ -406,7 +414,7 @@ class _VehicleFormScreenState extends State<VehicleFormScreen> {
       );
     }
 
-    // On Desktop: Render the identical persistent sidebar and top bar matching the guideline right mockup
+    // On Desktop: Render the identical persistent sidebar and top bar matching the Stark guideline
     return Scaffold(
       backgroundColor: AppTheme.canvas,
       body: Row(
@@ -414,7 +422,7 @@ class _VehicleFormScreenState extends State<VehicleFormScreen> {
           // Sidebar
           SizedBox(
             width: 220,
-            child: Container(
+            child: Material(
               color: AppTheme.starkNavy,
               child: SafeArea(
                 child: Column(
@@ -422,61 +430,117 @@ class _VehicleFormScreenState extends State<VehicleFormScreen> {
                   children: [
                     Padding(
                       padding: const EdgeInsets.fromLTRB(20, 24, 20, 28),
-                      child: Row(
-                        children: [
-                          Container(
-                            width: 34,
-                            height: 34,
-                            decoration: BoxDecoration(
-                              color: const Color(0xFF172F54),
-                              borderRadius: BorderRadius.circular(8),
-                              border: Border.all(
-                                color: const Color(0xFF00D2FF).withValues(alpha: 0.3),
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(8),
+                        onTap: () {
+                          Navigator.of(context).pop('nav_dashboard');
+                          widget.onNavigateToDashboard?.call();
+                        },
+                        child: Row(
+                          children: [
+                            Container(
+                              width: 36,
+                              height: 36,
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF172F54),
+                                borderRadius: BorderRadius.circular(8),
+                                border: Border.all(
+                                  color: const Color(0xFF00D2FF).withValues(alpha: 0.35),
+                                ),
                               ),
-                            ),
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.circular(7),
-                              child: Image.asset(
-                                'assets/images/stark_logo.jpg',
-                                fit: BoxFit.cover,
-                                errorBuilder: (context, error, stackTrace) => const Center(
-                                  child: Text(
-                                    'S',
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.w900,
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(7),
+                                child: Image.asset(
+                                  'assets/images/stark_logo.jpg',
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (context, error, stackTrace) => const Center(
+                                    child: Text(
+                                      'S',
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.w900,
+                                      ),
                                     ),
                                   ),
                                 ),
                               ),
                             ),
-                          ),
-                          const SizedBox(width: 10),
-                          const Text(
-                            'VMS',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 16,
-                              fontWeight: FontWeight.w800,
-                              letterSpacing: 1.0,
+                            const SizedBox(width: 10),
+                            const Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  'STARK',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.w900,
+                                    letterSpacing: 1.5,
+                                    height: 1.1,
+                                  ),
+                                ),
+                                Text(
+                                  'VMS',
+                                  style: TextStyle(
+                                    color: Color(0xFFB0BDD6),
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w700,
+                                    letterSpacing: 1.2,
+                                  ),
+                                ),
+                              ],
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     ),
-                    _SidebarStaticItem(
+                    _SidebarNavItem(
                       icon: Icons.dashboard_outlined,
                       label: 'Dashboard',
                       isSelected: false,
+                      onTap: () {
+                        Navigator.of(context).pop('nav_dashboard');
+                        widget.onNavigateToDashboard?.call();
+                      },
                     ),
                     const SizedBox(height: 6),
-                    _SidebarStaticItem(
+                    _SidebarNavItem(
                       icon: Icons.directions_car_outlined,
                       label: 'Vehicles',
                       isSelected: true,
+                      onTap: () {
+                        Navigator.of(context).pop('nav_vehicles');
+                        widget.onNavigateToVehicles?.call();
+                      },
                     ),
                     const Spacer(),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+                      child: Material(
+                        color: Colors.transparent,
+                        child: ListTile(
+                          leading: const Icon(
+                            Icons.arrow_back_rounded,
+                            color: Color(0xFF98A6C0),
+                            size: 20,
+                          ),
+                          title: const Text(
+                            'Back to fleet',
+                            style: TextStyle(
+                              color: Color(0xFF98A6C0),
+                              fontSize: 13,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          onTap: () => Navigator.of(context).pop(),
+                        ),
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -495,18 +559,34 @@ class _VehicleFormScreenState extends State<VehicleFormScreen> {
                     color: Colors.white,
                     border: Border(bottom: BorderSide(color: AppTheme.border)),
                   ),
-                  child: const Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
+                  child: Row(
                     children: [
-                      Icon(Icons.search_rounded, size: 20, color: AppTheme.mutedInk),
-                      SizedBox(width: 12),
-                      Icon(
-                        Icons.notifications_none_rounded,
-                        size: 20,
-                        color: AppTheme.mutedInk,
+                      Text(
+                        _isEditing ? 'Vehicles / Edit' : 'Vehicles / Register',
+                        style: const TextStyle(
+                          color: AppTheme.ink,
+                          fontSize: 15,
+                          fontWeight: FontWeight.w700,
+                        ),
                       ),
-                      SizedBox(width: 16),
-                      CircleAvatar(
+                      const Spacer(),
+                      IconButton(
+                        tooltip: 'Search',
+                        icon: const Icon(Icons.search_rounded, size: 20, color: AppTheme.mutedInk),
+                        onPressed: () {},
+                      ),
+                      const SizedBox(width: 4),
+                      IconButton(
+                        tooltip: 'Notifications',
+                        icon: const Icon(
+                          Icons.notifications_none_rounded,
+                          size: 20,
+                          color: AppTheme.mutedInk,
+                        ),
+                        onPressed: () {},
+                      ),
+                      const SizedBox(width: 16),
+                      const CircleAvatar(
                         radius: 16,
                         backgroundColor: AppTheme.starkBlueLight,
                         child: Icon(
@@ -554,39 +634,44 @@ class _FieldLabel extends StatelessWidget {
   }
 }
 
-class _SidebarStaticItem extends StatelessWidget {
-  const _SidebarStaticItem({
+class _SidebarNavItem extends StatelessWidget {
+  const _SidebarNavItem({
     required this.icon,
     required this.label,
     required this.isSelected,
+    required this.onTap,
   });
 
   final IconData icon;
   final String label;
   final bool isSelected;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 12),
-      decoration: BoxDecoration(
+      child: Material(
         color: isSelected ? AppTheme.starkBlue : Colors.transparent,
         borderRadius: BorderRadius.circular(6),
-      ),
-      child: ListTile(
-        dense: true,
-        leading: Icon(
-          icon,
-          color: isSelected ? Colors.white : const Color(0xFFB0BDD6),
-          size: 20,
-        ),
-        title: Text(
-          label,
-          style: TextStyle(
+        child: ListTile(
+          dense: true,
+          leading: Icon(
+            icon,
             color: isSelected ? Colors.white : const Color(0xFFB0BDD6),
-            fontSize: 13,
-            fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+            size: 20,
           ),
+          title: Text(
+            label,
+            style: TextStyle(
+              color: isSelected ? Colors.white : const Color(0xFFB0BDD6),
+              fontSize: 13,
+              fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+            ),
+          ),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+          hoverColor: isSelected ? AppTheme.starkBlue : Colors.white.withValues(alpha: 0.08),
+          onTap: onTap,
         ),
       ),
     );
