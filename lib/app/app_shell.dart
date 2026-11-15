@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:vms_frontend/core/theme/app_theme.dart';
 import 'package:vms_frontend/features/auth/login_screen.dart';
 import 'package:vms_frontend/features/auth/data/auth_service.dart';
+import 'package:vms_frontend/features/dashboard/dashboard_screen.dart';
 import 'package:vms_frontend/features/vehicles/data/vehicle_api_client.dart';
 import 'package:vms_frontend/features/vehicles/data/vehicle_repository.dart';
 import 'package:vms_frontend/features/vehicles/vehicle.dart';
@@ -28,6 +29,7 @@ class _AppShellState extends State<AppShell> {
   bool _isLoading = true;
   bool _isDeletingVehicle = false;
   String? _loadError;
+  int _selectedTabIndex = 0; // 0: Dashboard, 1: Vehicles
 
   @override
   void initState() {
@@ -131,25 +133,52 @@ class _AppShellState extends State<AppShell> {
     }
   }
 
-  Widget _vehicleContent() {
+  Widget _mainContentView() {
     if (_isLoading) {
-      return const LoadingIndicator(message: 'Loading vehicles…');
+      return const LoadingIndicator(message: 'Loading fleet data…');
     }
     if (_loadError != null) {
       return ErrorView(
-        title: 'Could not load vehicles',
+        title: 'Could not load fleet data',
         message: _loadError!,
         onRetry: _loadVehicles,
       );
     }
+
     return Stack(
       children: [
-        VehicleListScreen(
-          vehicles: List.unmodifiable(_vehicles),
-          onCreate: () => _openForm(),
-          onEdit: (vehicle) => _openForm(vehicle: vehicle),
-          onDelete: _deleteVehicle,
-          onRefresh: _loadVehicles,
+        AnimatedSwitcher(
+          duration: const Duration(milliseconds: 250),
+          switchInCurve: Curves.easeOutCubic,
+          switchOutCurve: Curves.easeInCubic,
+          transitionBuilder: (child, animation) {
+            return FadeTransition(
+              opacity: animation,
+              child: SlideTransition(
+                position: Tween<Offset>(
+                  begin: const Offset(0.02, 0),
+                  end: Offset.zero,
+                ).animate(animation),
+                child: child,
+              ),
+            );
+          },
+          child: _selectedTabIndex == 0
+              ? DashboardScreen(
+                  key: const ValueKey('DashboardView'),
+                  vehicles: List.unmodifiable(_vehicles),
+                  onNavigateToVehicles: () => setState(() => _selectedTabIndex = 1),
+                  onCreateVehicle: () => _openForm(),
+                  onRefresh: _loadVehicles,
+                )
+              : VehicleListScreen(
+                  key: const ValueKey('VehicleListView'),
+                  vehicles: List.unmodifiable(_vehicles),
+                  onCreate: () => _openForm(),
+                  onEdit: (vehicle) => _openForm(vehicle: vehicle),
+                  onDelete: _deleteVehicle,
+                  onRefresh: _loadVehicles,
+                ),
         ),
         if (_isDeletingVehicle)
           Positioned.fill(
@@ -194,9 +223,9 @@ class _AppShellState extends State<AppShell> {
       appBar: isDesktop
           ? null
           : AppBar(
-              title: const Text(
-                'Vehicle List',
-                style: TextStyle(
+              title: Text(
+                _selectedTabIndex == 0 ? 'Dashboard' : 'Vehicle List',
+                style: const TextStyle(
                   color: AppTheme.ink,
                   fontSize: 18,
                   fontWeight: FontWeight.w700,
@@ -219,6 +248,11 @@ class _AppShellState extends State<AppShell> {
               backgroundColor: AppTheme.starkNavy,
               child: SafeArea(
                 child: _SidebarContent(
+                  selectedTabIndex: _selectedTabIndex,
+                  onTabSelected: (index) {
+                    Navigator.pop(context);
+                    setState(() => _selectedTabIndex = index);
+                  },
                   onSignOut: () {
                     Navigator.pop(context);
                     _signOut();
@@ -234,7 +268,12 @@ class _AppShellState extends State<AppShell> {
               child: Container(
                 color: AppTheme.starkNavy,
                 child: SafeArea(
-                  child: _SidebarContent(onSignOut: _signOut),
+                  child: _SidebarContent(
+                    selectedTabIndex: _selectedTabIndex,
+                    onTabSelected: (index) =>
+                        setState(() => _selectedTabIndex = index),
+                    onSignOut: _signOut,
+                  ),
                 ),
               ),
             ),
@@ -242,8 +281,12 @@ class _AppShellState extends State<AppShell> {
             child: Column(
               children: [
                 if (isDesktop)
-                  _TopHeaderBar(onSignOut: _signOut),
-                Expanded(child: _vehicleContent()),
+                  _TopHeaderBar(
+                    currentTabTitle:
+                        _selectedTabIndex == 0 ? 'Dashboard' : 'Vehicle List',
+                    onSignOut: _signOut,
+                  ),
+                Expanded(child: _mainContentView()),
               ],
             ),
           ),
@@ -254,8 +297,12 @@ class _AppShellState extends State<AppShell> {
 }
 
 class _TopHeaderBar extends StatelessWidget {
-  const _TopHeaderBar({required this.onSignOut});
+  const _TopHeaderBar({
+    required this.currentTabTitle,
+    required this.onSignOut,
+  });
 
+  final String currentTabTitle;
   final VoidCallback onSignOut;
 
   @override
@@ -268,8 +315,18 @@ class _TopHeaderBar extends StatelessWidget {
         border: Border(bottom: BorderSide(color: AppTheme.border)),
       ),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.end,
         children: [
+          // Breadcrumb Title
+          Text(
+            currentTabTitle,
+            style: const TextStyle(
+              color: AppTheme.ink,
+              fontSize: 15,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          const Spacer(),
+
           IconButton(
             tooltip: 'Search',
             icon: const Icon(Icons.search_rounded, size: 20, color: AppTheme.mutedInk),
@@ -320,8 +377,14 @@ class _TopHeaderBar extends StatelessWidget {
 }
 
 class _SidebarContent extends StatelessWidget {
-  const _SidebarContent({required this.onSignOut});
+  const _SidebarContent({
+    required this.selectedTabIndex,
+    required this.onTabSelected,
+    required this.onSignOut,
+  });
 
+  final int selectedTabIndex;
+  final ValueChanged<int> onTabSelected;
   final VoidCallback onSignOut;
 
   @override
@@ -329,19 +392,19 @@ class _SidebarContent extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        // Brand "V" Logo matching the guideline mockup
+        // Brand Logo Lockup
         Padding(
           padding: const EdgeInsets.fromLTRB(20, 24, 20, 28),
           child: Row(
             children: [
               Container(
-                width: 34,
-                height: 34,
+                width: 36,
+                height: 36,
                 decoration: BoxDecoration(
                   color: const Color(0xFF172F54),
                   borderRadius: BorderRadius.circular(8),
                   border: Border.all(
-                    color: const Color(0xFF00D2FF).withValues(alpha: 0.3),
+                    color: const Color(0xFF00D2FF).withValues(alpha: 0.35),
                   ),
                 ),
                 child: ClipRRect(
@@ -363,47 +426,48 @@ class _SidebarContent extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 10),
-              const Text(
-                'VMS',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w800,
-                  letterSpacing: 1.0,
-                ),
+              const Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    'STARK',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 15,
+                      fontWeight: FontWeight.w900,
+                      letterSpacing: 1.5,
+                      height: 1.1,
+                    ),
+                  ),
+                  Text(
+                    'VMS',
+                    style: TextStyle(
+                      color: Color(0xFFB0BDD6),
+                      fontSize: 10,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 1.2,
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
         ),
 
-        // Navigation Items matching the guideline mockup:
-        // Dashboard, Vehicle (Active), User, Settings
+        // Navigation Items: Dashboard (0) & Vehicles (1)
         _SidebarNavItem(
-          icon: Icons.home_outlined,
+          icon: Icons.dashboard_outlined,
           label: 'Dashboard',
-          isSelected: false,
-          onTap: () {},
+          isSelected: selectedTabIndex == 0,
+          onTap: () => onTabSelected(0),
         ),
-        const SizedBox(height: 4),
+        const SizedBox(height: 6),
         _SidebarNavItem(
           icon: Icons.directions_car_outlined,
-          label: 'Vehicle',
-          isSelected: true,
-          onTap: () {},
-        ),
-        const SizedBox(height: 4),
-        _SidebarNavItem(
-          icon: Icons.person_outline_rounded,
-          label: 'User',
-          isSelected: false,
-          onTap: () {},
-        ),
-        const SizedBox(height: 4),
-        _SidebarNavItem(
-          icon: Icons.settings_outlined,
-          label: 'Settings',
-          isSelected: false,
-          onTap: () {},
+          label: 'Vehicles',
+          isSelected: selectedTabIndex == 1,
+          onTap: () => onTabSelected(1),
         ),
 
         const Spacer(),
@@ -470,6 +534,7 @@ class _SidebarNavItem extends StatelessWidget {
             fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
           ),
         ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
         onTap: onTap,
       ),
     );

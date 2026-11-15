@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:vms_frontend/app/app.dart';
 import 'package:vms_frontend/core/theme/app_theme.dart';
+import 'package:vms_frontend/features/dashboard/dashboard_screen.dart';
 import 'package:vms_frontend/features/vehicles/vehicle.dart';
 import 'package:vms_frontend/features/vehicles/vehicle_form_screen.dart';
 import 'package:vms_frontend/features/vehicles/vehicle_list_screen.dart';
@@ -18,6 +19,77 @@ void main() {
 
     expect(find.text('Enter your work email.'), findsOneWidget);
     expect(find.text('Enter a password to continue.'), findsOneWidget);
+  });
+
+  testWidgets('DashboardScreen renders key metrics and charts', (
+    WidgetTester tester,
+  ) async {
+    tester.view.physicalSize = const Size(1280, 900);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(() {
+      tester.view.resetPhysicalSize();
+      tester.view.resetDevicePixelRatio();
+    });
+
+    final testVehicles = [
+      const Vehicle(
+        id: '1',
+        vehicleNumber: '00000001',
+        company: 'Stark Logistics',
+        type: 'Truck',
+        brand: 'Brand 1',
+        model: 'Model X',
+        status: 'Active',
+      ),
+      const Vehicle(
+        id: '2',
+        vehicleNumber: '00000002',
+        company: 'Apex Transport',
+        type: 'Van',
+        brand: 'Brand 2',
+        model: 'Model S',
+        status: 'In maintenance',
+      ),
+      const Vehicle(
+        id: '3',
+        vehicleNumber: '00000003',
+        company: 'Stark Logistics',
+        type: 'Sedan',
+        brand: 'Brand 3',
+        model: 'Model 3',
+        status: 'Inactive',
+      ),
+    ];
+
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: AppTheme.lightTheme,
+        home: Scaffold(
+          body: DashboardScreen(
+            vehicles: testVehicles,
+            onNavigateToVehicles: () {},
+            onCreateVehicle: () {},
+            onRefresh: () async {},
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    // Check Header
+    expect(find.text('Dashboard'), findsOneWidget);
+    expect(find.text('+ New Vehicle'), findsOneWidget);
+
+    // Check 4 Key KPI Cards
+    expect(find.text('Active Operations'), findsOneWidget);
+    expect(find.text('In Maintenance'), findsWidgets);
+    expect(find.text('Inactive / Standby'), findsOneWidget);
+    expect(find.text('Total Fleet'), findsOneWidget);
+
+    // Check Chart Headings
+    expect(find.text('Status Distribution'), findsOneWidget);
+    expect(find.text('Fleet by Vehicle Type'), findsOneWidget);
+    expect(find.text('Operating Companies'), findsOneWidget);
   });
 
   testWidgets('VehicleListScreen renders table on desktop matching guideline', (
