@@ -20,93 +20,49 @@ class VehicleApiClient {
   final http.Client _client;
   final String? Function()? accessTokenProvider;
   final String _baseUrl;
-  static final List<Vehicle> _localMockVehicles =
-      List<Vehicle>.from(Vehicle.mockVehicles);
-
   Future<List<Vehicle>> listVehicles() async {
-    try {
-      final response = await _send(
-        () => _client.get(_vehiclesUri, headers: _headers()),
+    final response = await _send(
+      () => _client.get(_vehiclesUri, headers: _headers()),
+    );
+    final decoded = _decodeResponse(response);
+    if (decoded is! List) {
+      throw const VehicleApiException(
+        'The server returned an invalid vehicle list.',
       );
-      final decoded = _decodeResponse(response);
-      if (decoded is! List) {
-        throw const VehicleApiException(
-          'The server returned an invalid vehicle list.',
-        );
-      }
-      return decoded
-          .map((item) => Vehicle.fromJson(item as Map<String, dynamic>))
-          .toList(growable: false);
-    } catch (e) {
-      if (e is VehicleApiException &&
-          (e.message.contains('Could not connect') || e.timedOut)) {
-        return List.unmodifiable(_localMockVehicles);
-      }
-      rethrow;
     }
+    return decoded
+        .map((item) => Vehicle.fromJson(item as Map<String, dynamic>))
+        .toList(growable: false);
   }
 
   Future<Vehicle> createVehicle(Vehicle vehicle) async {
-    try {
-      final response = await _send(
-        () => _client.post(
-          _vehiclesUri,
-          headers: _headers(json: true),
-          body: jsonEncode(_requestBody(vehicle)),
-        ),
-      );
-      return _vehicleFromResponse(response);
-    } catch (e) {
-      if (e is VehicleApiException &&
-          (e.message.contains('Could not connect') || e.timedOut)) {
-        final newVehicle = vehicle.copyWith(
-          id: '${DateTime.now().millisecondsSinceEpoch}',
-        );
-        _localMockVehicles.add(newVehicle);
-        return newVehicle;
-      }
-      rethrow;
-    }
+    final response = await _send(
+      () => _client.post(
+        _vehiclesUri,
+        headers: _headers(json: true),
+        body: jsonEncode(_requestBody(vehicle)),
+      ),
+    );
+    return _vehicleFromResponse(response);
   }
 
   Future<Vehicle> updateVehicle(Vehicle vehicle) async {
-    try {
-      final response = await _send(
-        () => _client.put(
-          _vehicleUri(vehicle.id),
-          headers: _headers(json: true),
-          body: jsonEncode(_requestBody(vehicle)),
-        ),
-      );
-      return _vehicleFromResponse(response);
-    } catch (e) {
-      if (e is VehicleApiException &&
-          (e.message.contains('Could not connect') || e.timedOut)) {
-        final index = _localMockVehicles.indexWhere((v) => v.id == vehicle.id);
-        if (index != -1) {
-          _localMockVehicles[index] = vehicle;
-        }
-        return vehicle;
-      }
-      rethrow;
-    }
+    final response = await _send(
+      () => _client.put(
+        _vehicleUri(vehicle.id),
+        headers: _headers(json: true),
+        body: jsonEncode(_requestBody(vehicle)),
+      ),
+    );
+    return _vehicleFromResponse(response);
   }
 
   Future<void> deleteVehicle(String id) async {
-    try {
-      final response = await _send(
-        () => _client.delete(_vehicleUri(id), headers: _headers()),
-      );
-      if (response.statusCode != 204) {
-        _throwApiError(response);
-      }
-    } catch (e) {
-      if (e is VehicleApiException &&
-          (e.message.contains('Could not connect') || e.timedOut)) {
-        _localMockVehicles.removeWhere((v) => v.id == id);
-        return;
-      }
-      rethrow;
+    final response = await _send(
+      () => _client.delete(_vehicleUri(id), headers: _headers()),
+    );
+    if (response.statusCode != 204) {
+      _throwApiError(response);
     }
   }
 

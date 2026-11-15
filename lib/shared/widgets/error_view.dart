@@ -26,13 +26,13 @@ class ErrorView extends StatelessWidget {
               width: 64,
               height: 64,
               decoration: BoxDecoration(
-                color: const Color(0xFFFEF3F2),
+                color: AppTheme.statusDisconnectedBg,
                 borderRadius: BorderRadius.circular(20),
               ),
               child: const Icon(
                 Icons.error_outline_rounded,
                 size: 30,
-                color: Color(0xFFD92D20),
+                color: AppTheme.statusDisconnectedText,
               ),
             ),
             const SizedBox(height: 17),
@@ -44,9 +44,8 @@ class ErrorView extends StatelessWidget {
             const SizedBox(height: 8),
             Text(
               message,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: AppTheme.mutedInk,
-                  ),
+              style: Theme.of(context).textTheme.bodyMedium
+                  ?.copyWith(color: AppTheme.mutedInk),
               textAlign: TextAlign.center,
             ),
             if (onRetry != null) ...[

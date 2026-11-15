@@ -45,8 +45,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
         .where((v) => v.status.toLowerCase().contains('maintenance'))
         .length;
     final inactiveCount = totalCount - activeCount - maintenanceCount;
-    final operationalRate =
-        totalCount == 0 ? 0.0 : (activeCount / totalCount) * 100;
+    final operationalRate = totalCount == 0
+        ? 0.0
+        : (activeCount / totalCount) * 100;
 
     // Type distribution
     final typeCounts = <String, int>{};
@@ -200,10 +201,7 @@ class _DashboardHeader extends StatelessWidget {
               const SizedBox(height: 4),
               const Text(
                 'Real-time overview of fleet operations, status distribution, and metrics.',
-                style: TextStyle(
-                  color: AppTheme.mutedInk,
-                  fontSize: 13,
-                ),
+                style: TextStyle(color: AppTheme.mutedInk, fontSize: 13),
               ),
             ],
           ),
@@ -296,8 +294,8 @@ class _KpiMetricRow extends StatelessWidget {
               value: '$maintenanceCount',
               subtitle: 'Scheduled service',
               icon: Icons.build_circle_outlined,
-              color: const Color(0xFFD97706),
-              bgColor: const Color(0xFFFFFBEB),
+              color: AppTheme.statusWarningText,
+              bgColor: AppTheme.statusWarningBg,
               progress: totalCount == 0 ? 0.0 : maintenanceCount / totalCount,
             ),
             _KpiMetricCard(
@@ -449,7 +447,11 @@ class _StatusDistributionCard extends StatelessWidget {
         children: [
           const Row(
             children: [
-              Icon(Icons.pie_chart_outline_rounded, size: 18, color: AppTheme.starkBlue),
+              Icon(
+                Icons.pie_chart_outline_rounded,
+                size: 18,
+                color: AppTheme.starkBlue,
+              ),
               SizedBox(width: 8),
               Text(
                 'Status Distribution',
@@ -519,7 +521,7 @@ class _StatusDistributionCard extends StatelessWidget {
                       label: 'In Maintenance',
                       count: maintenanceCount,
                       total: totalCount,
-                      color: const Color(0xFFD97706),
+                      color: AppTheme.statusWarningText,
                     ),
                     const SizedBox(height: 10),
                     _StatusLegendItem(
@@ -637,7 +639,7 @@ class _StatusDonutPainter extends CustomPainter {
     }
 
     drawSegment(active, AppTheme.statusConnectedText);
-    drawSegment(maintenance, const Color(0xFFD97706));
+    drawSegment(maintenance, AppTheme.statusWarningText);
     drawSegment(inactive, AppTheme.statusDisabledText);
   }
 
@@ -663,7 +665,9 @@ class _VehicleTypeBreakdownCard extends StatelessWidget {
     if (lower.contains('truck') || lower.contains('lorry')) {
       return Icons.local_shipping_rounded;
     }
-    if (lower.contains('van') || lower.contains('hiace') || lower.contains('micro')) {
+    if (lower.contains('van') ||
+        lower.contains('hiace') ||
+        lower.contains('micro')) {
       return Icons.airport_shuttle_rounded;
     }
     if (lower.contains('bus')) {
@@ -690,7 +694,11 @@ class _VehicleTypeBreakdownCard extends StatelessWidget {
         children: [
           const Row(
             children: [
-              Icon(Icons.category_outlined, size: 18, color: AppTheme.starkBlue),
+              Icon(
+                Icons.category_outlined,
+                size: 18,
+                color: AppTheme.starkBlue,
+              ),
               SizedBox(width: 8),
               Text(
                 'Fleet by Vehicle Type',
@@ -907,7 +915,11 @@ class _QuickActionCard extends StatelessWidget {
         children: [
           Row(
             children: [
-              const Icon(Icons.flash_on_rounded, size: 18, color: AppTheme.starkBlue),
+              const Icon(
+                Icons.flash_on_rounded,
+                size: 18,
+                color: AppTheme.starkBlue,
+              ),
               const SizedBox(width: 8),
               const Text(
                 'Quick Actions',
@@ -950,7 +962,11 @@ class _QuickActionCard extends StatelessWidget {
           const SizedBox(height: 16),
           const Text(
             'Direct access to live vehicle records, asset registration, and fleet telemetry.',
-            style: TextStyle(color: AppTheme.mutedInk, fontSize: 13, height: 1.45),
+            style: TextStyle(
+              color: AppTheme.mutedInk,
+              fontSize: 13,
+              height: 1.45,
+            ),
           ),
           const SizedBox(height: 20),
           Row(

@@ -101,6 +101,16 @@ class _VehicleFormScreenState extends State<VehicleFormScreen> {
     final width = MediaQuery.sizeOf(context).width;
     final isDesktop = width >= 860;
     final twoColumns = width >= 640;
+    final vehicleTypes = <String>{
+      'Truck',
+      'Van',
+      'Sedan',
+      'SUV',
+      'Bus',
+      'Motorcycle',
+      'Pickup',
+      _typeController.text,
+    }.where((type) => type.isNotEmpty).toList();
 
     final formContent = ListView(
       padding: EdgeInsets.all(width < 600 ? 16 : 28),
@@ -170,21 +180,21 @@ class _VehicleFormScreenState extends State<VehicleFormScreen> {
                                 : null,
                             isExpanded: true,
                             hint: const Text('Select type'),
-                            items: [
-                              'Truck',
-                              'Van',
-                              'Sedan',
-                              'SUV',
-                              'Bus',
-                              'Motorcycle',
-                              'Pickup',
-                            ].map((t) => DropdownMenuItem(value: t, child: Text(t))).toList(),
+                            items: vehicleTypes
+                                .map(
+                                  (type) => DropdownMenuItem(
+                                    value: type,
+                                    child: Text(type),
+                                  ),
+                                )
+                                .toList(),
                             onChanged: (val) {
                               if (val != null) {
                                 setState(() => _typeController.text = val);
                               }
                             },
-                            validator: (_) => _required(_typeController.text, 'vehicle type'),
+                            validator: (_) =>
+                                _required(_typeController.text, 'vehicle type'),
                           ),
                         ),
                       ),
@@ -213,21 +223,21 @@ class _VehicleFormScreenState extends State<VehicleFormScreen> {
                           : null,
                       isExpanded: true,
                       hint: const Text('Select type'),
-                      items: [
-                        'Truck',
-                        'Van',
-                        'Sedan',
-                        'SUV',
-                        'Bus',
-                        'Motorcycle',
-                        'Pickup',
-                      ].map((t) => DropdownMenuItem(value: t, child: Text(t))).toList(),
+                      items: vehicleTypes
+                          .map(
+                            (type) => DropdownMenuItem(
+                              value: type,
+                              child: Text(type),
+                            ),
+                          )
+                          .toList(),
                       onChanged: (val) {
                         if (val != null) {
                           setState(() => _typeController.text = val);
                         }
                       },
-                      validator: (_) => _required(_typeController.text, 'vehicle type'),
+                      validator: (_) =>
+                          _required(_typeController.text, 'vehicle type'),
                     ),
                   ),
                   const SizedBox(height: 18),
@@ -312,15 +322,15 @@ class _VehicleFormScreenState extends State<VehicleFormScreen> {
                   child: DropdownButtonFormField<String>(
                     initialValue: _status,
                     isExpanded: true,
-                    items: {
-                      ...VehicleStatus.values.map((s) => s.label),
-                      _status,
-                    }
-                        .map((status) => DropdownMenuItem(
-                              value: status,
-                              child: Text(status),
-                            ))
-                        .toList(),
+                    items:
+                        {...VehicleStatus.values.map((s) => s.label), _status}
+                            .map(
+                              (status) => DropdownMenuItem(
+                                value: status,
+                                child: Text(status),
+                              ),
+                            )
+                            .toList(),
                     onChanged: (val) {
                       if (val != null) setState(() => _status = val);
                     },
@@ -334,9 +344,11 @@ class _VehicleFormScreenState extends State<VehicleFormScreen> {
                     margin: const EdgeInsets.only(bottom: 16),
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: const Color(0xFFFFEBE6),
+                      color: AppTheme.statusDisconnectedBg,
                       borderRadius: BorderRadius.circular(6),
-                      border: Border.all(color: const Color(0xFFFFBDAD)),
+                      border: Border.all(
+                        color: AppTheme.statusDisconnectedBorder,
+                      ),
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -344,7 +356,7 @@ class _VehicleFormScreenState extends State<VehicleFormScreen> {
                         Text(
                           _saveError!,
                           style: const TextStyle(
-                            color: Color(0xFFBF2600),
+                            color: AppTheme.statusDisconnectedText,
                             fontSize: 12,
                           ),
                         ),
@@ -442,10 +454,12 @@ class _VehicleFormScreenState extends State<VehicleFormScreen> {
                               width: 36,
                               height: 36,
                               decoration: BoxDecoration(
-                                color: const Color(0xFF172F54),
+                                color: AppTheme.starkNavy,
                                 borderRadius: BorderRadius.circular(8),
                                 border: Border.all(
-                                  color: const Color(0xFF00D2FF).withValues(alpha: 0.35),
+                                  color: AppTheme.starkBlueLight.withValues(
+                                    alpha: 0.35,
+                                  ),
                                 ),
                               ),
                               child: ClipRRect(
@@ -453,16 +467,17 @@ class _VehicleFormScreenState extends State<VehicleFormScreen> {
                                 child: Image.asset(
                                   'assets/images/stark_logo.jpg',
                                   fit: BoxFit.cover,
-                                  errorBuilder: (context, error, stackTrace) => const Center(
-                                    child: Text(
-                                      'S',
-                                      style: TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.w900,
+                                  errorBuilder: (context, error, stackTrace) =>
+                                      const Center(
+                                        child: Text(
+                                          'S',
+                                          style: TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 18,
+                                            fontWeight: FontWeight.w900,
+                                          ),
+                                        ),
                                       ),
-                                    ),
-                                  ),
                                 ),
                               ),
                             ),
@@ -484,7 +499,7 @@ class _VehicleFormScreenState extends State<VehicleFormScreen> {
                                 Text(
                                   'VMS',
                                   style: TextStyle(
-                                    color: Color(0xFFB0BDD6),
+                                    color: AppTheme.sidebarMuted,
                                     fontSize: 10,
                                     fontWeight: FontWeight.w700,
                                     letterSpacing: 1.2,
@@ -517,19 +532,22 @@ class _VehicleFormScreenState extends State<VehicleFormScreen> {
                     ),
                     const Spacer(),
                     Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 16,
+                      ),
                       child: Material(
                         color: Colors.transparent,
                         child: ListTile(
                           leading: const Icon(
                             Icons.arrow_back_rounded,
-                            color: Color(0xFF98A6C0),
+                            color: AppTheme.sidebarMuted,
                             size: 20,
                           ),
                           title: const Text(
                             'Back to fleet',
                             style: TextStyle(
-                              color: Color(0xFF98A6C0),
+                              color: AppTheme.sidebarMuted,
                               fontSize: 13,
                               fontWeight: FontWeight.w500,
                             ),
@@ -570,22 +588,7 @@ class _VehicleFormScreenState extends State<VehicleFormScreen> {
                         ),
                       ),
                       const Spacer(),
-                      IconButton(
-                        tooltip: 'Search',
-                        icon: const Icon(Icons.search_rounded, size: 20, color: AppTheme.mutedInk),
-                        onPressed: () {},
-                      ),
-                      const SizedBox(width: 4),
-                      IconButton(
-                        tooltip: 'Notifications',
-                        icon: const Icon(
-                          Icons.notifications_none_rounded,
-                          size: 20,
-                          color: AppTheme.mutedInk,
-                        ),
-                        onPressed: () {},
-                      ),
-                      const SizedBox(width: 16),
+                      const Spacer(),
                       const CircleAvatar(
                         radius: 16,
                         backgroundColor: AppTheme.starkBlueLight,
@@ -658,19 +661,21 @@ class _SidebarNavItem extends StatelessWidget {
           dense: true,
           leading: Icon(
             icon,
-            color: isSelected ? Colors.white : const Color(0xFFB0BDD6),
+            color: isSelected ? Colors.white : AppTheme.sidebarMuted,
             size: 20,
           ),
           title: Text(
             label,
             style: TextStyle(
-              color: isSelected ? Colors.white : const Color(0xFFB0BDD6),
+              color: isSelected ? Colors.white : AppTheme.sidebarMuted,
               fontSize: 13,
               fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
             ),
           ),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
-          hoverColor: isSelected ? AppTheme.starkBlue : Colors.white.withValues(alpha: 0.08),
+          hoverColor: isSelected
+              ? AppTheme.starkBlue
+              : Colors.white.withValues(alpha: 0.08),
           onTap: onTap,
         ),
       ),

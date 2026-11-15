@@ -45,20 +45,15 @@ class _LoginScreenState extends State<LoginScreen>
       curve: const Interval(0.0, 0.85, curve: Curves.easeOut),
     );
 
-    _slideAnimation = Tween<Offset>(
-      begin: const Offset(0.0, 0.08),
-      end: Offset.zero,
-    ).animate(
-      CurvedAnimation(
-        parent: _animController,
-        curve: const Interval(0.1, 1.0, curve: Curves.easeOutCubic),
-      ),
-    );
+    _slideAnimation =
+        Tween<Offset>(begin: const Offset(0.0, 0.08), end: Offset.zero).animate(
+          CurvedAnimation(
+            parent: _animController,
+            curve: const Interval(0.1, 1.0, curve: Curves.easeOutCubic),
+          ),
+        );
 
-    _logoScaleAnimation = Tween<double>(
-      begin: 0.85,
-      end: 1.0,
-    ).animate(
+    _logoScaleAnimation = Tween<double>(begin: 0.85, end: 1.0).animate(
       CurvedAnimation(
         parent: _animController,
         curve: const Interval(0.0, 0.7, curve: Curves.easeOutBack),
@@ -132,14 +127,12 @@ class _LoginScreenState extends State<LoginScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0A192F),
+      backgroundColor: AppTheme.starkNavyDark,
       body: Stack(
         children: [
           // Dynamic Atmospheric Fleet Background
           Positioned.fill(
-            child: CustomPaint(
-              painter: _FleetTechBackgroundPainter(),
-            ),
+            child: CustomPaint(painter: _FleetTechBackgroundPainter()),
           ),
 
           // Ambient Radial Light Cones
@@ -153,7 +146,7 @@ class _LoginScreenState extends State<LoginScreen>
                 shape: BoxShape.circle,
                 gradient: RadialGradient(
                   colors: [
-                    const Color(0xFF0052CC).withValues(alpha: 0.18),
+                    AppTheme.starkBlue.withValues(alpha: 0.18),
                     Colors.transparent,
                   ],
                 ),
@@ -170,7 +163,7 @@ class _LoginScreenState extends State<LoginScreen>
                 shape: BoxShape.circle,
                 gradient: RadialGradient(
                   colors: [
-                    const Color(0xFF002D62).withValues(alpha: 0.35),
+                    AppTheme.starkNavy.withValues(alpha: 0.35),
                     Colors.transparent,
                   ],
                 ),
@@ -182,7 +175,10 @@ class _LoginScreenState extends State<LoginScreen>
           SafeArea(
             child: Center(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 32,
+                ),
                 child: FadeTransition(
                   opacity: _fadeAnimation,
                   child: SlideTransition(
@@ -255,7 +251,9 @@ class _LoginScreenState extends State<LoginScreen>
                                     child: TextFormField(
                                       controller: _emailController,
                                       keyboardType: TextInputType.emailAddress,
-                                      autofillHints: const [AutofillHints.username],
+                                      autofillHints: const [
+                                        AutofillHints.username,
+                                      ],
                                       textInputAction: TextInputAction.next,
                                       decoration: InputDecoration(
                                         hintText: 'e.g. admin@stark.com',
@@ -264,24 +262,31 @@ class _LoginScreenState extends State<LoginScreen>
                                           size: 19,
                                           color: AppTheme.mutedInk,
                                         ),
-                                        contentPadding: const EdgeInsets.symmetric(
-                                          horizontal: 14,
-                                          vertical: 13,
-                                        ),
+                                        contentPadding:
+                                            const EdgeInsets.symmetric(
+                                              horizontal: 14,
+                                              vertical: 13,
+                                            ),
                                         border: OutlineInputBorder(
-                                          borderRadius: BorderRadius.circular(8),
+                                          borderRadius: BorderRadius.circular(
+                                            8,
+                                          ),
                                           borderSide: const BorderSide(
                                             color: AppTheme.border,
                                           ),
                                         ),
                                         enabledBorder: OutlineInputBorder(
-                                          borderRadius: BorderRadius.circular(8),
+                                          borderRadius: BorderRadius.circular(
+                                            8,
+                                          ),
                                           borderSide: const BorderSide(
                                             color: AppTheme.border,
                                           ),
                                         ),
                                         focusedBorder: OutlineInputBorder(
-                                          borderRadius: BorderRadius.circular(8),
+                                          borderRadius: BorderRadius.circular(
+                                            8,
+                                          ),
                                           borderSide: const BorderSide(
                                             color: AppTheme.starkBlue,
                                             width: 1.8,
@@ -293,7 +298,8 @@ class _LoginScreenState extends State<LoginScreen>
                                         if (email.isEmpty) {
                                           return 'Enter your work email.';
                                         }
-                                        if (!RegExp(r'^.+@.+\..+$').hasMatch(email)) {
+                                        if (!RegExp(r'^.+@.+\..+$')
+                                            .hasMatch(email)) {
                                           return 'Enter a valid email address.';
                                         }
                                         return null;
@@ -311,7 +317,9 @@ class _LoginScreenState extends State<LoginScreen>
                                     child: TextFormField(
                                       controller: _passwordController,
                                       obscureText: _obscurePassword,
-                                      autofillHints: const [AutofillHints.password],
+                                      autofillHints: const [
+                                        AutofillHints.password,
+                                      ],
                                       onFieldSubmitted: (_) => _signIn(),
                                       decoration: InputDecoration(
                                         hintText: '••••••••',
@@ -320,24 +328,31 @@ class _LoginScreenState extends State<LoginScreen>
                                           size: 19,
                                           color: AppTheme.mutedInk,
                                         ),
-                                        contentPadding: const EdgeInsets.symmetric(
-                                          horizontal: 14,
-                                          vertical: 13,
-                                        ),
+                                        contentPadding:
+                                            const EdgeInsets.symmetric(
+                                              horizontal: 14,
+                                              vertical: 13,
+                                            ),
                                         border: OutlineInputBorder(
-                                          borderRadius: BorderRadius.circular(8),
+                                          borderRadius: BorderRadius.circular(
+                                            8,
+                                          ),
                                           borderSide: const BorderSide(
                                             color: AppTheme.border,
                                           ),
                                         ),
                                         enabledBorder: OutlineInputBorder(
-                                          borderRadius: BorderRadius.circular(8),
+                                          borderRadius: BorderRadius.circular(
+                                            8,
+                                          ),
                                           borderSide: const BorderSide(
                                             color: AppTheme.border,
                                           ),
                                         ),
                                         focusedBorder: OutlineInputBorder(
-                                          borderRadius: BorderRadius.circular(8),
+                                          borderRadius: BorderRadius.circular(
+                                            8,
+                                          ),
                                           borderSide: const BorderSide(
                                             color: AppTheme.starkBlue,
                                             width: 1.8,
@@ -348,7 +363,8 @@ class _LoginScreenState extends State<LoginScreen>
                                               ? 'Show password'
                                               : 'Hide password',
                                           onPressed: () => setState(
-                                            () => _obscurePassword = !_obscurePassword,
+                                            () => _obscurePassword =
+                                                !_obscurePassword,
                                           ),
                                           icon: Icon(
                                             _obscurePassword
@@ -359,7 +375,8 @@ class _LoginScreenState extends State<LoginScreen>
                                           ),
                                         ),
                                       ),
-                                      validator: (value) => (value?.isEmpty ?? true)
+                                      validator: (value) =>
+                                          (value?.isEmpty ?? true)
                                           ? 'Enter a password to continue.'
                                           : null,
                                     ),
@@ -371,13 +388,18 @@ class _LoginScreenState extends State<LoginScreen>
                                     Semantics(
                                       liveRegion: true,
                                       child: Container(
-                                        margin: const EdgeInsets.only(bottom: 16),
+                                        margin: const EdgeInsets.only(
+                                          bottom: 16,
+                                        ),
                                         padding: const EdgeInsets.all(12),
                                         decoration: BoxDecoration(
-                                          color: const Color(0xFFFFEBE6),
-                                          borderRadius: BorderRadius.circular(8),
+                                          color: AppTheme.statusDisconnectedBg,
+                                          borderRadius: BorderRadius.circular(
+                                            8,
+                                          ),
                                           border: Border.all(
-                                            color: const Color(0xFFFFBDAD),
+                                            color: AppTheme
+                                                .statusDisconnectedBorder,
                                           ),
                                         ),
                                         child: Row(
@@ -386,7 +408,8 @@ class _LoginScreenState extends State<LoginScreen>
                                           children: [
                                             const Icon(
                                               Icons.error_outline_rounded,
-                                              color: Color(0xFFDE350B),
+                                              color: AppTheme
+                                                  .statusDisconnectedText,
                                               size: 17,
                                             ),
                                             const SizedBox(width: 8),
@@ -394,7 +417,8 @@ class _LoginScreenState extends State<LoginScreen>
                                               child: Text(
                                                 _authError!,
                                                 style: const TextStyle(
-                                                  color: Color(0xFFBF2600),
+                                                  color: AppTheme
+                                                      .statusDisconnectedText,
                                                   fontSize: 12,
                                                 ),
                                               ),
@@ -408,13 +432,18 @@ class _LoginScreenState extends State<LoginScreen>
                                     Semantics(
                                       liveRegion: true,
                                       child: Container(
-                                        margin: const EdgeInsets.only(bottom: 16),
+                                        margin: const EdgeInsets.only(
+                                          bottom: 16,
+                                        ),
                                         padding: const EdgeInsets.all(12),
                                         decoration: BoxDecoration(
-                                          color: const Color(0xFFFFEBE6),
-                                          borderRadius: BorderRadius.circular(8),
+                                          color: AppTheme.statusDisconnectedBg,
+                                          borderRadius: BorderRadius.circular(
+                                            8,
+                                          ),
                                           border: Border.all(
-                                            color: const Color(0xFFFFBDAD),
+                                            color: AppTheme
+                                                .statusDisconnectedBorder,
                                           ),
                                         ),
                                         child: Column(
@@ -424,7 +453,8 @@ class _LoginScreenState extends State<LoginScreen>
                                             Text(
                                               _restoreError!,
                                               style: const TextStyle(
-                                                color: Color(0xFFBF2600),
+                                                color: AppTheme
+                                                    .statusDisconnectedText,
                                                 fontSize: 12,
                                               ),
                                             ),
@@ -463,18 +493,18 @@ class _LoginScreenState extends State<LoginScreen>
                                   SizedBox(
                                     height: 46,
                                     child: FilledButton(
-                                      onPressed:
-                                          _isSubmitting || _isRestoring
-                                              ? null
-                                              : _signIn,
+                                      onPressed: _isSubmitting || _isRestoring
+                                          ? null
+                                          : _signIn,
                                       style: FilledButton.styleFrom(
                                         backgroundColor: AppTheme.starkBlue,
                                         foregroundColor: Colors.white,
                                         elevation: 2,
                                         shadowColor: const Color(0x330052CC),
                                         shape: RoundedRectangleBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(8),
+                                          borderRadius: BorderRadius.circular(
+                                            8,
+                                          ),
                                         ),
                                       ),
                                       child: _isSubmitting || _isRestoring
@@ -548,10 +578,10 @@ class _StarkBrandHeader extends StatelessWidget {
           width: 72,
           height: 72,
           decoration: BoxDecoration(
-            color: const Color(0xFF172F54),
+            color: AppTheme.starkNavy,
             borderRadius: BorderRadius.circular(18),
             border: Border.all(
-              color: const Color(0xFF00D2FF).withValues(alpha: 0.35),
+              color: AppTheme.starkBlueLight.withValues(alpha: 0.35),
               width: 1.5,
             ),
             boxShadow: const [
@@ -561,7 +591,7 @@ class _StarkBrandHeader extends StatelessWidget {
                 offset: Offset(0, 8),
               ),
               BoxShadow(
-                color: Color(0x3300D2FF),
+                color: Color(0x330052CC),
                 blurRadius: 12,
                 offset: Offset(0, 2),
               ),
@@ -624,16 +654,16 @@ class _FleetTechBackgroundPainter extends CustomPainter {
         begin: Alignment.topLeft,
         end: Alignment.bottomRight,
         colors: [
-          Color(0xFF0F223D),
-          Color(0xFF172F54),
-          Color(0xFF091629),
+          AppTheme.starkNavyDark,
+          AppTheme.starkNavy,
+          AppTheme.starkNavyDark,
         ],
       ).createShader(rect);
     canvas.drawRect(rect, bgPaint);
 
     // 2. Telemetry Tech Grid Lines
     final gridPaint = Paint()
-      ..color = const Color(0xFF00D2FF).withValues(alpha: 0.06)
+      ..color = AppTheme.starkBlueLight.withValues(alpha: 0.06)
       ..strokeWidth = 1.0;
 
     const gridSize = 40.0;
@@ -646,7 +676,7 @@ class _FleetTechBackgroundPainter extends CustomPainter {
 
     // 3. Grid Intersection Nodes
     final nodePaint = Paint()
-      ..color = const Color(0xFF00D2FF).withValues(alpha: 0.16)
+      ..color = AppTheme.starkBlueLight.withValues(alpha: 0.16)
       ..style = PaintingStyle.fill;
 
     for (double x = gridSize; x < size.width; x += gridSize * 3) {
@@ -657,7 +687,7 @@ class _FleetTechBackgroundPainter extends CustomPainter {
 
     // 4. Subtle Ambient Highway / Route Vector Curves
     final routePaint = Paint()
-      ..color = const Color(0xFF00D2FF).withValues(alpha: 0.08)
+      ..color = AppTheme.starkBlueLight.withValues(alpha: 0.08)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.5;
 

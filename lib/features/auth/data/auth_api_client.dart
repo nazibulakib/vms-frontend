@@ -18,61 +18,39 @@ class AuthApiClient {
   final String _baseUrl;
 
   Future<LoginResponse> login(String email, String password) async {
-    try {
-      final response = await _send(
-        () => _client.post(
-          _uri('/auth/login'),
-          headers: const {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json',
-          },
-          body: jsonEncode({'email': email, 'password': password}),
-        ),
+    final response = await _send(
+      () => _client.post(
+        _uri('/auth/login'),
+        headers: const {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode({'email': email, 'password': password}),
+      ),
+    );
+    final json = _readJson(response);
+    if (json is! Map<String, dynamic>) {
+      throw const AuthApiException(
+        'The server returned an invalid login response.',
       );
-      final json = _readJson(response);
-      if (json is! Map<String, dynamic>) {
-        throw const AuthApiException(
-          'The server returned an invalid login response.',
-        );
-      }
-      return LoginResponse.fromJson(json);
-    } catch (e) {
-      if (e is AuthApiException &&
-          (e.message.contains('Could not connect') || e.timedOut)) {
-        return LoginResponse(
-          accessToken: 'demo-local-session-token',
-          email: email,
-        );
-      }
-      rethrow;
     }
+    return LoginResponse.fromJson(json);
   }
 
   Future<AuthSession> currentSession(String accessToken) async {
-    if (accessToken == 'demo-local-session-token') {
-      return const AuthSession(email: 'vms.admin@starkgroup.local');
-    }
-    try {
-      final response = await _send(
-        () => _client.get(
-          _uri('/auth/session'),
-          headers: _bearerHeaders(accessToken),
-        ),
+    final response = await _send(
+      () => _client.get(
+        _uri('/auth/session'),
+        headers: _bearerHeaders(accessToken),
+      ),
+    );
+    final json = _readJson(response);
+    if (json is! Map<String, dynamic>) {
+      throw const AuthApiException(
+        'The server returned an invalid session response.',
       );
-      final json = _readJson(response);
-      if (json is! Map<String, dynamic>) {
-        throw const AuthApiException(
-          'The server returned an invalid session response.',
-        );
-      }
-      return AuthSession.fromJson(json);
-    } catch (e) {
-      if (e is AuthApiException &&
-          (e.message.contains('Could not connect') || e.timedOut)) {
-        return const AuthSession(email: 'vms.admin@starkgroup.local');
-      }
-      rethrow;
     }
+    return AuthSession.fromJson(json);
   }
 
   Future<void> logout(String accessToken) async {

@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:vms_frontend/core/theme/app_theme.dart';
 
 /// Accessible progress state for requests that may be delayed by a cold start.
 class ServerRequestProgress extends StatefulWidget {
@@ -51,16 +52,16 @@ class _ServerRequestProgressState extends State<ServerRequestProgress> {
               child: Container(
                 padding: const EdgeInsets.all(14),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFFFF8E5),
+                  color: AppTheme.statusWarningBg,
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: const Color(0xFFFFE7A0)),
+                  border: Border.all(color: AppTheme.statusWarningBorder),
                 ),
                 child: const Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Icon(
                       Icons.schedule_rounded,
-                      color: Color(0xFFB54708),
+                      color: AppTheme.statusWarningText,
                       size: 18,
                     ),
                     SizedBox(width: 10),
@@ -69,7 +70,7 @@ class _ServerRequestProgressState extends State<ServerRequestProgress> {
                         _waitMessage,
                         textAlign: TextAlign.left,
                         style: TextStyle(
-                          color: Color(0xFF93370D),
+                          color: AppTheme.statusWarningText,
                           fontSize: 13,
                           height: 1.45,
                         ),

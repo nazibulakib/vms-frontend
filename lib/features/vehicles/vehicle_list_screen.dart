@@ -26,7 +26,7 @@ class _VehicleListScreenState extends State<VehicleListScreen> {
   final _searchController = TextEditingController();
   String _query = '';
   VehicleStatus? _statusFilter;
-  final Set<String> _selectedVehicleIds = {};
+  bool _isRefreshing = false;
 
   @override
   void dispose() {
@@ -37,7 +37,8 @@ class _VehicleListScreenState extends State<VehicleListScreen> {
   List<Vehicle> get _filteredVehicles {
     final query = _query.trim().toLowerCase();
     return widget.vehicles.where((vehicle) {
-      final matchesQuery = query.isEmpty ||
+      final matchesQuery =
+          query.isEmpty ||
           [
             vehicle.vehicleNumber,
             vehicle.company,
@@ -46,28 +47,19 @@ class _VehicleListScreenState extends State<VehicleListScreen> {
             vehicle.model,
           ].any((value) => value.toLowerCase().contains(query));
       return matchesQuery &&
-          (_statusFilter == null || vehicle.status == _statusFilter!.apiValue);
+          (_statusFilter == null ||
+              vehicle.status.toLowerCase() ==
+                  _statusFilter!.apiValue.toLowerCase());
     }).toList();
   }
 
-  void _toggleSelectAll(bool? selected, List<Vehicle> currentList) {
-    setState(() {
-      if (selected == true) {
-        _selectedVehicleIds.addAll(currentList.map((v) => v.id));
-      } else {
-        _selectedVehicleIds.clear();
-      }
-    });
-  }
-
-  void _toggleSelectOne(bool? selected, String id) {
-    setState(() {
-      if (selected == true) {
-        _selectedVehicleIds.add(id);
-      } else {
-        _selectedVehicleIds.remove(id);
-      }
-    });
+  Future<void> _refresh() async {
+    setState(() => _isRefreshing = true);
+    try {
+      await widget.onRefresh();
+    } finally {
+      if (mounted) setState(() => _isRefreshing = false);
+    }
   }
 
   @override
@@ -79,9 +71,6 @@ class _VehicleListScreenState extends State<VehicleListScreen> {
         final padding = width < 600 ? 16.0 : 28.0;
 
         final filtered = _filteredVehicles;
-        final allSelected = filtered.isNotEmpty &&
-            filtered.every((v) => _selectedVehicleIds.contains(v.id));
-
         return ListView(
           padding: EdgeInsets.all(padding),
           children: [
@@ -130,7 +119,7 @@ class _VehicleListScreenState extends State<VehicleListScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  // Filter Toolbar (Search input + Status dropdown + Filter button)
+                  // Search and status filters apply as soon as they change.
                   Padding(
                     padding: const EdgeInsets.all(16),
                     child: Wrap(
@@ -166,6 +155,7 @@ class _VehicleListScreenState extends State<VehicleListScreen> {
                             initialValue: _statusFilter,
                             isExpanded: true,
                             decoration: const InputDecoration(
+                              labelText: 'Filter',
                               contentPadding: EdgeInsets.symmetric(
                                 horizontal: 12,
                                 vertical: 10,
@@ -188,24 +178,18 @@ class _VehicleListScreenState extends State<VehicleListScreen> {
                           ),
                         ),
 
-                        // Filter button
-                        FilledButton.icon(
-                          onPressed: () {
-                            // Focus or refresh filtering
-                          },
-                          icon: const Icon(Icons.tune_rounded, size: 16),
-                          label: const Text('Filter'),
-                          style: FilledButton.styleFrom(
-                            backgroundColor: AppTheme.starkBlue,
-                            foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 14,
-                              vertical: 10,
-                            ),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(6),
-                            ),
-                          ),
+                        IconButton.outlined(
+                          tooltip: 'Refresh vehicles',
+                          onPressed: _isRefreshing ? null : _refresh,
+                          icon: _isRefreshing
+                              ? const SizedBox(
+                                  width: 16,
+                                  height: 16,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                  ),
+                                )
+                              : const Icon(Icons.refresh_rounded, size: 18),
                         ),
 
                         if (_query.isNotEmpty || _statusFilter != null)
@@ -240,11 +224,6 @@ class _VehicleListScreenState extends State<VehicleListScreen> {
                   else if (isDesktop)
                     _DesktopTableView(
                       vehicles: filtered,
-                      allSelected: allSelected,
-                      selectedIds: _selectedVehicleIds,
-                      onToggleSelectAll: (val) =>
-                          _toggleSelectAll(val, filtered),
-                      onToggleSelectOne: _toggleSelectOne,
                       onEdit: widget.onEdit,
                       onDelete: widget.onDelete,
                     )
@@ -253,14 +232,12 @@ class _VehicleListScreenState extends State<VehicleListScreen> {
                       padding: const EdgeInsets.all(12),
                       child: _MobileCardListView(
                         vehicles: filtered,
-                        selectedIds: _selectedVehicleIds,
-                        onToggleSelectOne: _toggleSelectOne,
                         onEdit: widget.onEdit,
                         onDelete: widget.onDelete,
                       ),
                     ),
 
-                  // Footer: "Showing 1 - 5 of 5 results" + Pagination `< [ 1 ] >`
+                  // Show the number of matches without suggesting pagination.
                   if (filtered.isNotEmpty) ...[
                     const Divider(color: AppTheme.border),
                     Padding(
@@ -271,49 +248,11 @@ class _VehicleListScreenState extends State<VehicleListScreen> {
                       child: Row(
                         children: [
                           Text(
-                            'Showing 1 - ${filtered.length} of ${filtered.length} results',
+                            '${filtered.length} ${filtered.length == 1 ? 'vehicle' : 'vehicles'}',
                             style: const TextStyle(
                               color: AppTheme.mutedInk,
                               fontSize: 12,
                             ),
-                          ),
-                          const Spacer(),
-                          // Pagination Controls matching the mockup `< [ 1 ] >`
-                          Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              _PaginationButton(
-                                icon: Icons.chevron_left,
-                                isEnabled: false,
-                                onTap: () {},
-                              ),
-                              const SizedBox(width: 4),
-                              Container(
-                                width: 28,
-                                height: 28,
-                                decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  borderRadius: BorderRadius.circular(4),
-                                  border: Border.all(color: AppTheme.border),
-                                ),
-                                child: const Center(
-                                  child: Text(
-                                    '1',
-                                    style: TextStyle(
-                                      color: AppTheme.ink,
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(width: 4),
-                              _PaginationButton(
-                                icon: Icons.chevron_right,
-                                isEnabled: false,
-                                onTap: () {},
-                              ),
-                            ],
                           ),
                         ],
                       ),
@@ -332,19 +271,11 @@ class _VehicleListScreenState extends State<VehicleListScreen> {
 class _DesktopTableView extends StatelessWidget {
   const _DesktopTableView({
     required this.vehicles,
-    required this.allSelected,
-    required this.selectedIds,
-    required this.onToggleSelectAll,
-    required this.onToggleSelectOne,
     required this.onEdit,
     required this.onDelete,
   });
 
   final List<Vehicle> vehicles;
-  final bool allSelected;
-  final Set<String> selectedIds;
-  final ValueChanged<bool?> onToggleSelectAll;
-  final void Function(bool? selected, String id) onToggleSelectOne;
   final ValueChanged<Vehicle> onEdit;
   final ValueChanged<Vehicle> onDelete;
 
@@ -366,13 +297,6 @@ class _DesktopTableView extends StatelessWidget {
             fontWeight: FontWeight.w700,
           ),
           columns: [
-            DataColumn(
-              label: Checkbox(
-                value: allSelected,
-                onChanged: onToggleSelectAll,
-                materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-              ),
-            ),
             const DataColumn(label: Text('Vehicle Number')),
             const DataColumn(label: Text('Brand')),
             const DataColumn(label: Text('Model')),
@@ -382,17 +306,8 @@ class _DesktopTableView extends StatelessWidget {
             const DataColumn(label: Text('Actions')),
           ],
           rows: vehicles.map((vehicle) {
-            final isSelected = selectedIds.contains(vehicle.id);
             return DataRow(
-              selected: isSelected,
               cells: [
-                DataCell(
-                  Checkbox(
-                    value: isSelected,
-                    onChanged: (val) => onToggleSelectOne(val, vehicle.id),
-                    materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                  ),
-                ),
                 DataCell(
                   Text(
                     vehicle.vehicleNumber,
@@ -418,13 +333,19 @@ class _DesktopTableView extends StatelessWidget {
                 DataCell(
                   Text(
                     vehicle.company,
-                    style: const TextStyle(color: AppTheme.mutedInk, fontSize: 13),
+                    style: const TextStyle(
+                      color: AppTheme.mutedInk,
+                      fontSize: 13,
+                    ),
                   ),
                 ),
                 DataCell(
                   Text(
                     vehicle.type,
-                    style: const TextStyle(color: AppTheme.mutedInk, fontSize: 13),
+                    style: const TextStyle(
+                      color: AppTheme.mutedInk,
+                      fontSize: 13,
+                    ),
                   ),
                 ),
                 DataCell(_StatusBadge(status: vehicle.status)),
@@ -442,7 +363,10 @@ class _DesktopTableView extends StatelessWidget {
                         onPressed: () => onEdit(vehicle),
                         visualDensity: VisualDensity.compact,
                         padding: EdgeInsets.zero,
-                        constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+                        constraints: const BoxConstraints(
+                          minWidth: 32,
+                          minHeight: 32,
+                        ),
                       ),
                       const SizedBox(width: 4),
                       IconButton(
@@ -450,12 +374,15 @@ class _DesktopTableView extends StatelessWidget {
                         icon: const Icon(
                           Icons.delete_outline_rounded,
                           size: 18,
-                          color: Color(0xFFDE350B),
+                          color: AppTheme.statusDisconnectedText,
                         ),
                         onPressed: () => onDelete(vehicle),
                         visualDensity: VisualDensity.compact,
                         padding: EdgeInsets.zero,
-                        constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+                        constraints: const BoxConstraints(
+                          minWidth: 32,
+                          minHeight: 32,
+                        ),
                       ),
                     ],
                   ),
@@ -472,15 +399,11 @@ class _DesktopTableView extends StatelessWidget {
 class _MobileCardListView extends StatelessWidget {
   const _MobileCardListView({
     required this.vehicles,
-    required this.selectedIds,
-    required this.onToggleSelectOne,
     required this.onEdit,
     required this.onDelete,
   });
 
   final List<Vehicle> vehicles;
-  final Set<String> selectedIds;
-  final void Function(bool? selected, String id) onToggleSelectOne;
   final ValueChanged<Vehicle> onEdit;
   final ValueChanged<Vehicle> onDelete;
 
@@ -502,11 +425,6 @@ class _MobileCardListView extends StatelessWidget {
               children: [
                 Row(
                   children: [
-                    Checkbox(
-                      value: selectedIds.contains(vehicle.id),
-                      onChanged: (val) => onToggleSelectOne(val, vehicle.id),
-                      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                    ),
                     Expanded(
                       child: Text(
                         vehicle.vehicleNumber,
@@ -567,11 +485,13 @@ class _MobileCardListView extends StatelessWidget {
                       icon: const Icon(
                         Icons.delete_outline_rounded,
                         size: 16,
-                        color: Color(0xFFDE350B),
+                        color: AppTheme.statusDisconnectedText,
                       ),
                       label: const Text(
                         'Delete',
-                        style: TextStyle(color: Color(0xFFDE350B)),
+                        style: TextStyle(
+                          color: AppTheme.statusDisconnectedText,
+                        ),
                       ),
                     ),
                   ],
@@ -594,18 +514,15 @@ class _StatusBadge extends StatelessWidget {
   Widget build(BuildContext context) {
     final lower = status.toLowerCase();
     final (bg, text) = switch (lower) {
-      'active' || 'connected' => (
-        AppTheme.statusConnectedBg,
-        AppTheme.statusConnectedText,
-      ),
-      'in maintenance' || 'maintenance' || 'disconnected' => (
+      'active' ||
+      'connected' => (AppTheme.statusConnectedBg, AppTheme.statusConnectedText),
+      'in maintenance' ||
+      'maintenance' => (AppTheme.statusWarningBg, AppTheme.statusWarningText),
+      'disconnected' => (
         AppTheme.statusDisconnectedBg,
         AppTheme.statusDisconnectedText,
       ),
-      _ => (
-        AppTheme.statusDisabledBg,
-        AppTheme.statusDisabledText,
-      ),
+      _ => (AppTheme.statusDisabledBg, AppTheme.statusDisabledText),
     };
 
     return Semantics(
@@ -623,38 +540,6 @@ class _StatusBadge extends StatelessWidget {
             fontSize: 11,
             fontWeight: FontWeight.w600,
           ),
-        ),
-      ),
-    );
-  }
-}
-
-class _PaginationButton extends StatelessWidget {
-  const _PaginationButton({
-    required this.icon,
-    required this.isEnabled,
-    required this.onTap,
-  });
-
-  final IconData icon;
-  final bool isEnabled;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 28,
-      height: 28,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(4),
-        border: Border.all(color: AppTheme.border),
-      ),
-      child: Center(
-        child: Icon(
-          icon,
-          size: 18,
-          color: isEnabled ? AppTheme.ink : AppTheme.subtleInk,
         ),
       ),
     );
@@ -720,7 +605,11 @@ class _NoMatchesView extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 40, horizontal: 20),
       child: Column(
         children: [
-          const Icon(Icons.search_off_rounded, size: 36, color: AppTheme.subtleInk),
+          const Icon(
+            Icons.search_off_rounded,
+            size: 36,
+            color: AppTheme.subtleInk,
+          ),
           const SizedBox(height: 12),
           const Text(
             'No vehicles found',
@@ -736,10 +625,7 @@ class _NoMatchesView extends StatelessWidget {
             style: TextStyle(color: AppTheme.mutedInk, fontSize: 12),
           ),
           const SizedBox(height: 14),
-          OutlinedButton(
-            onPressed: onReset,
-            child: const Text('Reset filter'),
-          ),
+          OutlinedButton(onPressed: onReset, child: const Text('Reset filter')),
         ],
       ),
     );

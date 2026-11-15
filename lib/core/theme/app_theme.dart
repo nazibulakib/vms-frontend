@@ -9,6 +9,7 @@ class AppTheme {
   static const Color starkBlue = Color(0xFF0052CC);
   static const Color starkBlueDark = Color(0xFF0747A6);
   static const Color starkBlueLight = Color(0xFFDEEBFF);
+  static const Color sidebarMuted = Color(0xFFB0BDD6);
 
   // Surface & Canvas
   static const Color canvas = Color(0xFFF4F6F9);
@@ -30,6 +31,11 @@ class AppTheme {
 
   static const Color statusDisconnectedBg = Color(0xFFFFEBE6);
   static const Color statusDisconnectedText = Color(0xFFDE350B);
+  static const Color statusDisconnectedBorder = Color(0xFFFFBDAD);
+
+  static const Color statusWarningBg = Color(0xFFFFFBEB);
+  static const Color statusWarningText = Color(0xFFB54708);
+  static const Color statusWarningBorder = Color(0xFFFFE7A0);
 
   static const Color statusDisabledBg = Color(0xFFF4F5F7);
   static const Color statusDisabledText = Color(0xFF5E6C84);
@@ -48,24 +54,12 @@ class AppTheme {
 
   // Box Shadows
   static const List<BoxShadow> cardShadow = [
-    BoxShadow(
-      color: Color(0x0A091E42),
-      blurRadius: 12,
-      offset: Offset(0, 4),
-    ),
-    BoxShadow(
-      color: Color(0x06091E42),
-      blurRadius: 2,
-      offset: Offset(0, 1),
-    ),
+    BoxShadow(color: Color(0x0A091E42), blurRadius: 12, offset: Offset(0, 4)),
+    BoxShadow(color: Color(0x06091E42), blurRadius: 2, offset: Offset(0, 1)),
   ];
 
   static const List<BoxShadow> floatingShadow = [
-    BoxShadow(
-      color: Color(0x18091E42),
-      blurRadius: 24,
-      offset: Offset(0, 8),
-    ),
+    BoxShadow(color: Color(0x18091E42), blurRadius: 24, offset: Offset(0, 8)),
   ];
 
   static ThemeData get lightTheme {
@@ -117,20 +111,9 @@ class AppTheme {
           fontSize: 14,
           fontWeight: FontWeight.w600,
         ),
-        bodyLarge: TextStyle(
-          color: ink,
-          fontSize: 14,
-          height: 1.5,
-        ),
-        bodyMedium: TextStyle(
-          color: mutedInk,
-          fontSize: 13,
-          height: 1.5,
-        ),
-        bodySmall: TextStyle(
-          color: subtleInk,
-          fontSize: 12,
-        ),
+        bodyLarge: TextStyle(color: ink, fontSize: 14, height: 1.5),
+        bodyMedium: TextStyle(color: mutedInk, fontSize: 13, height: 1.5),
+        bodySmall: TextStyle(color: subtleInk, fontSize: 12),
         labelLarge: TextStyle(
           color: ink,
           fontSize: 13,
@@ -177,11 +160,14 @@ class AppTheme {
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(6),
-          borderSide: const BorderSide(color: Color(0xFFDE350B)),
+          borderSide: const BorderSide(color: statusDisconnectedText),
         ),
         focusedErrorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(6),
-          borderSide: const BorderSide(color: Color(0xFFDE350B), width: 1.8),
+          borderSide: const BorderSide(
+            color: statusDisconnectedText,
+            width: 1.8,
+          ),
         ),
       ),
       filledButtonTheme: FilledButtonThemeData(
@@ -191,13 +177,8 @@ class AppTheme {
           minimumSize: const Size(40, 40),
           padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 11),
           elevation: 0,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(6),
-          ),
-          textStyle: const TextStyle(
-            fontSize: 13,
-            fontWeight: FontWeight.w600,
-          ),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+          textStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
         ),
       ),
       outlinedButtonTheme: OutlinedButtonThemeData(
@@ -206,13 +187,8 @@ class AppTheme {
           minimumSize: const Size(40, 40),
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 11),
           side: const BorderSide(color: border),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(6),
-          ),
-          textStyle: const TextStyle(
-            fontSize: 13,
-            fontWeight: FontWeight.w600,
-          ),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+          textStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
         ),
       ),
       cardTheme: CardThemeData(
@@ -228,9 +204,7 @@ class AppTheme {
         backgroundColor: Colors.white,
         surfaceTintColor: Colors.transparent,
         elevation: 6,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         titleTextStyle: const TextStyle(
           color: ink,
           fontSize: 16,
@@ -241,9 +215,7 @@ class AppTheme {
         backgroundColor: starkNavy,
         contentTextStyle: const TextStyle(color: Colors.white, fontSize: 13),
         behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
       ),
       dividerTheme: const DividerThemeData(
         color: border,

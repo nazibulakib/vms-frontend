@@ -120,7 +120,7 @@ class _AppShellState extends State<AppShell> {
           ),
           FilledButton(
             style: FilledButton.styleFrom(
-              backgroundColor: const Color(0xFFDE350B),
+              backgroundColor: AppTheme.statusDisconnectedText,
               foregroundColor: Colors.white,
             ),
             onPressed: () => Navigator.pop(dialogContext, true),
@@ -183,7 +183,8 @@ class _AppShellState extends State<AppShell> {
               ? DashboardScreen(
                   key: const ValueKey('DashboardView'),
                   vehicles: List.unmodifiable(_vehicles),
-                  onNavigateToVehicles: () => setState(() => _selectedTabIndex = 1),
+                  onNavigateToVehicles: () =>
+                      setState(() => _selectedTabIndex = 1),
                   onCreateVehicle: () => _openForm(),
                   onRefresh: _loadVehicles,
                 )
@@ -298,8 +299,9 @@ class _AppShellState extends State<AppShell> {
               children: [
                 if (isDesktop)
                   _TopHeaderBar(
-                    currentTabTitle:
-                        _selectedTabIndex == 0 ? 'Dashboard' : 'Vehicle List',
+                    currentTabTitle: _selectedTabIndex == 0
+                        ? 'Dashboard'
+                        : 'Vehicle List',
                     onSignOut: _signOut,
                   ),
                 Expanded(child: _mainContentView()),
@@ -313,10 +315,7 @@ class _AppShellState extends State<AppShell> {
 }
 
 class _TopHeaderBar extends StatelessWidget {
-  const _TopHeaderBar({
-    required this.currentTabTitle,
-    required this.onSignOut,
-  });
+  const _TopHeaderBar({required this.currentTabTitle, required this.onSignOut});
 
   final String currentTabTitle;
   final VoidCallback onSignOut;
@@ -343,22 +342,7 @@ class _TopHeaderBar extends StatelessWidget {
           ),
           const Spacer(),
 
-          IconButton(
-            tooltip: 'Search',
-            icon: const Icon(Icons.search_rounded, size: 20, color: AppTheme.mutedInk),
-            onPressed: () {},
-          ),
-          const SizedBox(width: 4),
-          IconButton(
-            tooltip: 'Notifications',
-            icon: const Icon(
-              Icons.notifications_none_rounded,
-              size: 20,
-              color: AppTheme.mutedInk,
-            ),
-            onPressed: () {},
-          ),
-          const SizedBox(width: 8),
+          const Spacer(),
           PopupMenuButton<String>(
             tooltip: 'Account',
             onSelected: (value) {
@@ -369,7 +353,11 @@ class _TopHeaderBar extends StatelessWidget {
                 value: 'logout',
                 child: Row(
                   children: [
-                    Icon(Icons.logout_rounded, size: 18, color: AppTheme.mutedInk),
+                    Icon(
+                      Icons.logout_rounded,
+                      size: 18,
+                      color: AppTheme.mutedInk,
+                    ),
                     SizedBox(width: 8),
                     Text('Sign out'),
                   ],
@@ -417,10 +405,10 @@ class _SidebarContent extends StatelessWidget {
                 width: 36,
                 height: 36,
                 decoration: BoxDecoration(
-                  color: const Color(0xFF172F54),
+                  color: AppTheme.starkNavy,
                   borderRadius: BorderRadius.circular(8),
                   border: Border.all(
-                    color: const Color(0xFF00D2FF).withValues(alpha: 0.35),
+                    color: AppTheme.starkBlueLight.withValues(alpha: 0.35),
                   ),
                 ),
                 child: ClipRRect(
@@ -459,7 +447,7 @@ class _SidebarContent extends StatelessWidget {
                   Text(
                     'VMS',
                     style: TextStyle(
-                      color: Color(0xFFB0BDD6),
+                      color: AppTheme.sidebarMuted,
                       fontSize: 10,
                       fontWeight: FontWeight.w700,
                       letterSpacing: 1.2,
@@ -496,18 +484,20 @@ class _SidebarContent extends StatelessWidget {
             child: ListTile(
               leading: const Icon(
                 Icons.logout_rounded,
-                color: Color(0xFF98A6C0),
+                color: AppTheme.sidebarMuted,
                 size: 20,
               ),
               title: const Text(
                 'Sign out',
                 style: TextStyle(
-                  color: Color(0xFF98A6C0),
+                  color: AppTheme.sidebarMuted,
                   fontSize: 13,
                   fontWeight: FontWeight.w500,
                 ),
               ),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(6),
+              ),
               onTap: onSignOut,
             ),
           ),
@@ -541,19 +531,21 @@ class _SidebarNavItem extends StatelessWidget {
           dense: true,
           leading: Icon(
             icon,
-            color: isSelected ? Colors.white : const Color(0xFFB0BDD6),
+            color: isSelected ? Colors.white : AppTheme.sidebarMuted,
             size: 20,
           ),
           title: Text(
             label,
             style: TextStyle(
-              color: isSelected ? Colors.white : const Color(0xFFB0BDD6),
+              color: isSelected ? Colors.white : AppTheme.sidebarMuted,
               fontSize: 13,
               fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
             ),
           ),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
-          hoverColor: isSelected ? AppTheme.starkBlue : Colors.white.withValues(alpha: 0.08),
+          hoverColor: isSelected
+              ? AppTheme.starkBlue
+              : Colors.white.withValues(alpha: 0.08),
           onTap: onTap,
         ),
       ),

@@ -56,55 +56,6 @@ class Vehicle {
       status: status ?? this.status,
     );
   }
-
-  /// Default mock vehicle data for offline preview and testing
-  static const List<Vehicle> mockVehicles = [
-    Vehicle(
-      id: '1',
-      vehicleNumber: 'DHAKA-METRO-GA-11-4821',
-      company: 'Stark Logistics Ltd.',
-      type: 'Truck',
-      brand: 'Volvo',
-      model: 'FH16 2023',
-      status: 'Active',
-    ),
-    Vehicle(
-      id: '2',
-      vehicleNumber: 'DHAKA-METRO-BA-12-9900',
-      company: 'Apex Transport',
-      type: 'Van',
-      brand: 'Toyota',
-      model: 'Hiace Super GL',
-      status: 'In maintenance',
-    ),
-    Vehicle(
-      id: '3',
-      vehicleNumber: 'CHATTOGRAM-GA-04-1290',
-      company: 'Stark Logistics Ltd.',
-      type: 'Sedan',
-      brand: 'Toyota',
-      model: 'Corolla Altis',
-      status: 'Active',
-    ),
-    Vehicle(
-      id: '4',
-      vehicleNumber: 'RAJSHAHI-DA-02-5541',
-      company: 'Stark Logistics Ltd.',
-      type: 'SUV',
-      brand: 'Mitsubishi',
-      model: 'Pajero Sport',
-      status: 'Inactive',
-    ),
-    Vehicle(
-      id: '5',
-      vehicleNumber: 'SYLHET-CHA-01-8822',
-      company: 'Express Line',
-      type: 'Bus',
-      brand: 'Hino',
-      model: 'RM2 Deluxe',
-      status: 'Active',
-    ),
-  ];
 }
 
 extension VehicleStatusApiValue on VehicleStatus {
