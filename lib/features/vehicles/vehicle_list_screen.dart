@@ -102,7 +102,7 @@ class _VehicleListScreenState extends State<VehicleListScreen> {
                 FilledButton.icon(
                   onPressed: widget.onCreate,
                   icon: const Icon(Icons.add, size: 17),
-                  label: const Text('+ New List'),
+                  label: const Text('New Vehicle'),
                   style: FilledButton.styleFrom(
                     backgroundColor: AppTheme.starkBlue,
                     foregroundColor: Colors.white,
@@ -692,15 +692,16 @@ class _EmptyView extends StatelessWidget {
             style: TextStyle(color: AppTheme.mutedInk, fontSize: 13),
           ),
           const SizedBox(height: 16),
-          FilledButton(
+          FilledButton.icon(
             onPressed: onCreate,
+            icon: const Icon(Icons.add, size: 16),
             style: FilledButton.styleFrom(
               backgroundColor: AppTheme.starkBlue,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(6),
               ),
             ),
-            child: const Text('+ New List'),
+            label: const Text('New Vehicle'),
           ),
         ],
       ),

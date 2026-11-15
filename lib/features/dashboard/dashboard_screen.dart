@@ -233,7 +233,7 @@ class _DashboardHeader extends StatelessWidget {
             FilledButton.icon(
               onPressed: onCreateVehicle,
               icon: const Icon(Icons.add, size: 16),
-              label: const Text('+ New Vehicle'),
+              label: const Text('New Vehicle'),
               style: FilledButton.styleFrom(
                 backgroundColor: AppTheme.starkBlue,
                 foregroundColor: Colors.white,

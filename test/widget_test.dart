@@ -78,7 +78,7 @@ void main() {
 
     // Check Header
     expect(find.text('Dashboard'), findsOneWidget);
-    expect(find.text('+ New Vehicle'), findsOneWidget);
+    expect(find.text('New Vehicle'), findsOneWidget);
 
     // Check 4 Key KPI Cards
     expect(find.text('Active Operations'), findsOneWidget);
@@ -141,7 +141,7 @@ void main() {
 
     // Check Header and Action Button
     expect(find.text('Vehicle List'), findsOneWidget);
-    expect(find.text('+ New List'), findsOneWidget);
+    expect(find.text('New Vehicle'), findsOneWidget);
 
     // Check Filter Bar
     expect(find.text('Filter...'), findsOneWidget);
