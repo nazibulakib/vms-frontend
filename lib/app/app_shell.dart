@@ -92,59 +92,9 @@ class _AppShellState extends State<AppShell> {
     final shouldDelete = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        titlePadding: const EdgeInsets.fromLTRB(24, 24, 24, 12),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 24),
-        actionsPadding: const EdgeInsets.fromLTRB(24, 16, 24, 20),
-        title: Row(
-          children: [
-            Container(
-              width: 36,
-              height: 36,
-              decoration: BoxDecoration(
-                color: const Color(0xFFFEE2E2),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: const Icon(
-                Icons.delete_outline_rounded,
-                color: Color(0xFFDC2626),
-                size: 20,
-              ),
-            ),
-            const SizedBox(width: 12),
-            const Text(
-              'Delete vehicle?',
-              style: TextStyle(
-                fontSize: 17,
-                fontWeight: FontWeight.w700,
-                color: AppTheme.ink,
-              ),
-            ),
-          ],
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Remove ${vehicle.vehicleNumber} from your fleet?',
-              style: const TextStyle(
-                fontSize: 14,
-                color: AppTheme.ink,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            const SizedBox(height: 6),
-            const Text(
-              'This vehicle will be permanently removed from your active register. This action cannot be undone.',
-              style: TextStyle(
-                fontSize: 13,
-                color: AppTheme.mutedInk,
-                height: 1.45,
-              ),
-            ),
-          ],
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        title: const Text('Delete vehicle?'),
+        content: Text('Remove ${vehicle.vehicleNumber} from your fleet?'),
         actions: [
           OutlinedButton(
             onPressed: () => Navigator.pop(dialogContext, false),
@@ -152,7 +102,7 @@ class _AppShellState extends State<AppShell> {
           ),
           FilledButton(
             style: FilledButton.styleFrom(
-              backgroundColor: const Color(0xFFDC2626),
+              backgroundColor: const Color(0xFFDE350B),
               foregroundColor: Colors.white,
             ),
             onPressed: () => Navigator.pop(dialogContext, true),
@@ -183,7 +133,7 @@ class _AppShellState extends State<AppShell> {
 
   Widget _vehicleContent() {
     if (_isLoading) {
-      return const LoadingIndicator(message: 'Connecting to fleet register…');
+      return const LoadingIndicator(message: 'Loading vehicles…');
     }
     if (_loadError != null) {
       return ErrorView(
@@ -204,17 +154,14 @@ class _AppShellState extends State<AppShell> {
         if (_isDeletingVehicle)
           Positioned.fill(
             child: ColoredBox(
-              color: const Color(0x660F172A),
+              color: const Color(0x66000000),
               child: Center(
                 child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 32,
-                    vertical: 24,
-                  ),
+                  padding: const EdgeInsets.all(24),
                   decoration: BoxDecoration(
                     color: Colors.white,
-                    borderRadius: BorderRadius.circular(16),
-                    boxShadow: AppTheme.floatingShadow,
+                    borderRadius: BorderRadius.circular(10),
+                    boxShadow: AppTheme.cardShadow,
                   ),
                   child: const ServerRequestProgress(),
                 ),
@@ -240,14 +187,21 @@ class _AppShellState extends State<AppShell> {
 
   @override
   Widget build(BuildContext context) {
-    final isDesktop = MediaQuery.sizeOf(context).width >= 960;
+    final isDesktop = MediaQuery.sizeOf(context).width >= 860;
 
     return Scaffold(
       backgroundColor: AppTheme.canvas,
       appBar: isDesktop
           ? null
           : AppBar(
-              title: const _AppBrandTitle(),
+              title: const Text(
+                'Vehicle List',
+                style: TextStyle(
+                  color: AppTheme.ink,
+                  fontSize: 18,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
               backgroundColor: Colors.white,
               surfaceTintColor: Colors.transparent,
               elevation: 0,
@@ -262,10 +216,9 @@ class _AppShellState extends State<AppShell> {
       drawer: isDesktop
           ? null
           : Drawer(
-              backgroundColor: AppTheme.navy,
+              backgroundColor: AppTheme.starkNavy,
               child: SafeArea(
                 child: _SidebarContent(
-                  vehicleCount: _vehicles.length,
                   onSignOut: () {
                     Navigator.pop(context);
                     _signOut();
@@ -277,19 +230,11 @@ class _AppShellState extends State<AppShell> {
         children: [
           if (isDesktop)
             SizedBox(
-              width: 256,
+              width: 220,
               child: Container(
-                decoration: const BoxDecoration(
-                  color: AppTheme.navy,
-                  border: Border(
-                    right: BorderSide(color: Color(0xFF1E293B)),
-                  ),
-                ),
+                color: AppTheme.starkNavy,
                 child: SafeArea(
-                  child: _SidebarContent(
-                    vehicleCount: _vehicles.length,
-                    onSignOut: _signOut,
-                  ),
+                  child: _SidebarContent(onSignOut: _signOut),
                 ),
               ),
             ),
@@ -297,10 +242,7 @@ class _AppShellState extends State<AppShell> {
             child: Column(
               children: [
                 if (isDesktop)
-                  _TopNavbar(
-                    onRefresh: _loadVehicles,
-                    onCreate: () => _openForm(),
-                  ),
+                  _TopHeaderBar(onSignOut: _signOut),
                 Expanded(child: _vehicleContent()),
               ],
             ),
@@ -311,83 +253,64 @@ class _AppShellState extends State<AppShell> {
   }
 }
 
-class _TopNavbar extends StatelessWidget {
-  const _TopNavbar({
-    required this.onRefresh,
-    required this.onCreate,
-  });
+class _TopHeaderBar extends StatelessWidget {
+  const _TopHeaderBar({required this.onSignOut});
 
-  final Future<void> Function() onRefresh;
-  final VoidCallback onCreate;
+  final VoidCallback onSignOut;
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 60,
-      padding: const EdgeInsets.symmetric(horizontal: 32),
+      height: 56,
+      padding: const EdgeInsets.symmetric(horizontal: 24),
       decoration: const BoxDecoration(
         color: Colors.white,
         border: Border(bottom: BorderSide(color: AppTheme.border)),
       ),
       child: Row(
+        mainAxisAlignment: MainAxisAlignment.end,
         children: [
-          // Breadcrumbs
-          const Icon(
-            Icons.grid_view_rounded,
-            size: 16,
-            color: AppTheme.mutedInk,
+          IconButton(
+            tooltip: 'Search',
+            icon: const Icon(Icons.search_rounded, size: 20, color: AppTheme.mutedInk),
+            onPressed: () {},
+          ),
+          const SizedBox(width: 4),
+          IconButton(
+            tooltip: 'Notifications',
+            icon: const Icon(
+              Icons.notifications_none_rounded,
+              size: 20,
+              color: AppTheme.mutedInk,
+            ),
+            onPressed: () {},
           ),
           const SizedBox(width: 8),
-          const Text(
-            'Operations',
-            style: TextStyle(
-              color: AppTheme.mutedInk,
-              fontSize: 13,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-          const SizedBox(width: 6),
-          const Text(
-            '/',
-            style: TextStyle(color: AppTheme.subtleInk, fontSize: 13),
-          ),
-          const SizedBox(width: 6),
-          const Text(
-            'Fleet Vehicles',
-            style: TextStyle(
-              color: AppTheme.ink,
-              fontSize: 13,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-          const Spacer(),
-
-          // System Health Indicator
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-            decoration: BoxDecoration(
-              color: const Color(0xFFECFDF5),
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: const Color(0xFFA7F3D0)),
-            ),
-            child: const Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(
-                  Icons.circle,
-                  size: 6,
-                  color: Color(0xFF10B981),
+          PopupMenuButton<String>(
+            tooltip: 'Account',
+            onSelected: (value) {
+              if (value == 'logout') onSignOut();
+            },
+            itemBuilder: (context) => [
+              const PopupMenuItem(
+                value: 'logout',
+                child: Row(
+                  children: [
+                    Icon(Icons.logout_rounded, size: 18, color: AppTheme.mutedInk),
+                    SizedBox(width: 8),
+                    Text('Sign out'),
+                  ],
                 ),
-                SizedBox(width: 6),
-                Text(
-                  'Cloud Sync Active',
-                  style: TextStyle(
-                    color: Color(0xFF065F46),
-                    fontSize: 11,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ],
+              ),
+            ],
+            child: const CircleAvatar(
+              radius: 16,
+              backgroundColor: AppTheme.starkBlueLight,
+              child: Icon(
+                Icons.person_rounded,
+                size: 18,
+                color: AppTheme.starkBlue,
+              ),
             ),
           ),
         ],
@@ -397,12 +320,8 @@ class _TopNavbar extends StatelessWidget {
 }
 
 class _SidebarContent extends StatelessWidget {
-  const _SidebarContent({
-    required this.vehicleCount,
-    required this.onSignOut,
-  });
+  const _SidebarContent({required this.onSignOut});
 
-  final int vehicleCount;
   final VoidCallback onSignOut;
 
   @override
@@ -410,215 +329,149 @@ class _SidebarContent extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        // Brand Header
+        // Brand "V" Logo matching the guideline mockup
         Padding(
-          padding: const EdgeInsets.fromLTRB(20, 20, 20, 16),
-          child: Row(
-            children: [
-              Container(
-                width: 38,
-                height: 38,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(10),
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFF0EA5E9), Color(0xFF088395)],
-                  ),
-                  boxShadow: const [
-                    BoxShadow(
-                      color: Color(0x330EA5E9),
-                      blurRadius: 10,
-                      offset: Offset(0, 3),
-                    ),
-                  ],
-                ),
-                child: const Icon(
-                  Icons.local_shipping_rounded,
-                  color: Colors.white,
-                  size: 20,
-                ),
-              ),
-              const SizedBox(width: 11),
-              const Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'STARK',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w800,
-                      fontSize: 14,
-                      letterSpacing: 1.4,
-                    ),
-                  ),
-                  Text(
-                    'FLEET OS',
-                    style: TextStyle(
-                      color: Color(0xFF94A3B8),
-                      fontSize: 9,
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: 2.0,
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-        const Padding(
-          padding: EdgeInsets.symmetric(horizontal: 20),
-          child: Divider(color: Color(0xFF1E293B)),
-        ),
-        const SizedBox(height: 16),
-
-        // Navigation Group
-        const Padding(
-          padding: EdgeInsets.fromLTRB(20, 0, 20, 8),
-          child: Text(
-            'MANAGEMENT',
-            style: TextStyle(
-              color: Color(0xFF64748B),
-              fontSize: 10,
-              letterSpacing: 1.3,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-        ),
-
-        // Active Vehicle Nav Tab
-        Container(
-          margin: const EdgeInsets.symmetric(horizontal: 12),
-          decoration: BoxDecoration(
-            color: const Color(0xFF1E293B),
-            borderRadius: BorderRadius.circular(10),
-            border: Border.all(color: const Color(0xFF334155)),
-          ),
-          child: ListTile(
-            dense: true,
-            leading: const Icon(
-              Icons.directions_car_filled_rounded,
-              color: Color(0xFF38BDF8),
-              size: 20,
-            ),
-            title: const Text(
-              'Vehicles',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            trailing: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
-              decoration: BoxDecoration(
-                color: const Color(0xFF0F172A),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Text(
-                '$vehicleCount',
-                style: const TextStyle(
-                  color: Color(0xFF94A3B8),
-                  fontSize: 11,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ),
-          ),
-        ),
-        const Spacer(),
-
-        // User Account Card
-        Container(
-          margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            color: const Color(0xFF1E293B),
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: const Color(0xFF334155)),
-          ),
+          padding: const EdgeInsets.fromLTRB(20, 24, 20, 28),
           child: Row(
             children: [
               Container(
                 width: 34,
                 height: 34,
                 decoration: BoxDecoration(
-                  color: AppTheme.tealDark,
+                  color: const Color(0xFF172F54),
                   borderRadius: BorderRadius.circular(8),
+                  border: Border.all(
+                    color: const Color(0xFF00D2FF).withValues(alpha: 0.3),
+                  ),
                 ),
-                child: const Center(
-                  child: Text(
-                    'FA',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w700,
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(7),
+                  child: Image.asset(
+                    'assets/images/stark_logo.jpg',
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) => const Center(
+                      child: Text(
+                        'S',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 18,
+                          fontWeight: FontWeight.w900,
+                        ),
+                      ),
                     ),
                   ),
                 ),
               ),
               const SizedBox(width: 10),
-              const Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Fleet Admin',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    Text(
-                      'Operations',
-                      style: TextStyle(
-                        color: Color(0xFF94A3B8),
-                        fontSize: 10,
-                      ),
-                    ),
-                  ],
+              const Text(
+                'VMS',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: 1.0,
                 ),
-              ),
-              IconButton(
-                tooltip: 'Sign out',
-                icon: const Icon(
-                  Icons.logout_rounded,
-                  size: 18,
-                  color: Color(0xFF94A3B8),
-                ),
-                onPressed: onSignOut,
               ),
             ],
           ),
         ),
-        const SizedBox(height: 8),
+
+        // Navigation Items matching the guideline mockup:
+        // Dashboard, Vehicle (Active), User, Settings
+        _SidebarNavItem(
+          icon: Icons.home_outlined,
+          label: 'Dashboard',
+          isSelected: false,
+          onTap: () {},
+        ),
+        const SizedBox(height: 4),
+        _SidebarNavItem(
+          icon: Icons.directions_car_outlined,
+          label: 'Vehicle',
+          isSelected: true,
+          onTap: () {},
+        ),
+        const SizedBox(height: 4),
+        _SidebarNavItem(
+          icon: Icons.person_outline_rounded,
+          label: 'User',
+          isSelected: false,
+          onTap: () {},
+        ),
+        const SizedBox(height: 4),
+        _SidebarNavItem(
+          icon: Icons.settings_outlined,
+          label: 'Settings',
+          isSelected: false,
+          onTap: () {},
+        ),
+
+        const Spacer(),
+
+        // Sign out button
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+          child: ListTile(
+            leading: const Icon(
+              Icons.logout_rounded,
+              color: Color(0xFF98A6C0),
+              size: 20,
+            ),
+            title: const Text(
+              'Sign out',
+              style: TextStyle(
+                color: Color(0xFF98A6C0),
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+            onTap: onSignOut,
+          ),
+        ),
       ],
     );
   }
 }
 
-class _AppBrandTitle extends StatelessWidget {
-  const _AppBrandTitle();
+class _SidebarNavItem extends StatelessWidget {
+  const _SidebarNavItem({
+    required this.icon,
+    required this.label,
+    required this.isSelected,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final String label;
+  final bool isSelected;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
-    return const Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Icon(
-          Icons.local_shipping_rounded,
-          color: AppTheme.teal,
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 12),
+      decoration: BoxDecoration(
+        color: isSelected ? AppTheme.starkBlue : Colors.transparent,
+        borderRadius: BorderRadius.circular(6),
+      ),
+      child: ListTile(
+        dense: true,
+        leading: Icon(
+          icon,
+          color: isSelected ? Colors.white : const Color(0xFFB0BDD6),
           size: 20,
         ),
-        SizedBox(width: 8),
-        Text(
-          'Stark Fleet',
+        title: Text(
+          label,
           style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w800,
-            letterSpacing: -0.2,
+            color: isSelected ? Colors.white : const Color(0xFFB0BDD6),
+            fontSize: 13,
+            fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
           ),
         ),
-      ],
+        onTap: onTap,
+      ),
     );
   }
 }

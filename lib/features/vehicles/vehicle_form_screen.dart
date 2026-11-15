@@ -40,10 +40,6 @@ class _VehicleFormScreenState extends State<VehicleFormScreen> {
     _brandController = TextEditingController(text: vehicle?.brand ?? '');
     _modelController = TextEditingController(text: vehicle?.model ?? '');
     _status = vehicle?.status ?? VehicleStatus.active.label;
-
-    _numberController.addListener(() {
-      setState(() {});
-    });
   }
 
   @override
@@ -95,792 +91,513 @@ class _VehicleFormScreenState extends State<VehicleFormScreen> {
   @override
   Widget build(BuildContext context) {
     final width = MediaQuery.sizeOf(context).width;
-    final isDesktop = width >= 768;
-    final plateNumber = _numberController.text.trim().toUpperCase();
+    final isDesktop = width >= 860;
+    final twoColumns = width >= 640;
 
-    return Scaffold(
-      backgroundColor: AppTheme.canvas,
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        surfaceTintColor: Colors.transparent,
-        elevation: 0,
-        leading: IconButton(
-          tooltip: 'Back to vehicles',
-          icon: const Icon(Icons.arrow_back_rounded, size: 20),
-          onPressed: () => Navigator.of(context).pop(),
-        ),
-        title: Text(
-          _isEditing ? 'Edit Vehicle' : 'Register Vehicle',
-          style: const TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w700,
-            color: AppTheme.ink,
-          ),
-        ),
-        actions: [
-          if (_isEditing)
-            Padding(
-              padding: const EdgeInsets.only(right: 20),
-              child: Center(
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: AppTheme.surfaceAlt,
-                    borderRadius: BorderRadius.circular(6),
-                    border: Border.all(color: AppTheme.border),
-                  ),
-                  child: Text(
-                    widget.vehicle!.vehicleNumber,
-                    style: const TextStyle(
-                      color: AppTheme.navy,
-                      fontSize: 11,
-                      fontWeight: FontWeight.w700,
-                      fontFamilyFallback: ['monospace', 'Courier'],
-                    ),
-                  ),
-                ),
+    final formContent = ListView(
+      padding: EdgeInsets.all(width < 600 ? 16 : 28),
+      children: [
+        // Page Title matching Stark Guideline Right Mockup
+        Row(
+          children: [
+            IconButton(
+              tooltip: 'Back to vehicle list',
+              icon: const Icon(Icons.arrow_back_rounded, size: 20),
+              onPressed: () => Navigator.of(context).pop(),
+            ),
+            const SizedBox(width: 4),
+            Text(
+              _isEditing ? 'Update Vehicle' : 'Register / Update Vehicle',
+              style: const TextStyle(
+                fontSize: 22,
+                fontWeight: FontWeight.w700,
+                color: AppTheme.ink,
+                letterSpacing: -0.3,
               ),
             ),
-        ],
-      ),
-      body: Center(
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 820),
+          ],
+        ),
+        const SizedBox(height: 18),
+
+        // Main Card
+        Container(
+          padding: EdgeInsets.all(width < 600 ? 18 : 28),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: AppTheme.border),
+            boxShadow: AppTheme.cardShadow,
+          ),
           child: Form(
             key: _formKey,
             child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Expanded(
-                  child: ListView(
-                    padding: EdgeInsets.symmetric(
-                      horizontal: width < 600 ? 16 : 32,
-                      vertical: 24,
+                // Vehicle Number
+                _FieldLabel(
+                  label: 'Vehicle Number',
+                  child: TextFormField(
+                    controller: _numberController,
+                    textCapitalization: TextCapitalization.characters,
+                    textInputAction: TextInputAction.next,
+                    decoration: const InputDecoration(
+                      hintText: 'Enter vehicle number.',
                     ),
-                    children: [
-                      // Header & Live Plate Preview
-                      Container(
-                        padding: const EdgeInsets.all(20),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(16),
-                          border: Border.all(color: AppTheme.border),
-                          boxShadow: AppTheme.cardShadow,
-                        ),
-                        child: Row(
-                          children: [
-                            Container(
-                              width: 44,
-                              height: 44,
-                              decoration: BoxDecoration(
-                                color: AppTheme.tealLight,
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: const Icon(
-                                Icons.directions_car_filled_rounded,
-                                color: AppTheme.teal,
-                                size: 24,
-                              ),
-                            ),
-                            const SizedBox(width: 14),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    _isEditing
-                                        ? 'Update Asset Record'
-                                        : 'New Fleet Vehicle',
-                                    style: const TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w800,
-                                      color: AppTheme.ink,
-                                      letterSpacing: -0.3,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 2),
-                                  const Text(
-                                    'Asset identifiers, technical specifications, and operating status.',
-                                    style: TextStyle(
-                                      color: AppTheme.mutedInk,
-                                      fontSize: 12,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            if (plateNumber.isNotEmpty)
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 10,
-                                  vertical: 6,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: const Color(0xFFF8FAFC),
-                                  borderRadius: BorderRadius.circular(8),
-                                  border: Border.all(color: const Color(0xFFCBD5E1)),
-                                ),
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Container(
-                                      width: 4,
-                                      height: 14,
-                                      decoration: BoxDecoration(
-                                        color: AppTheme.teal,
-                                        borderRadius: BorderRadius.circular(2),
-                                      ),
-                                    ),
-                                    const SizedBox(width: 6),
-                                    Text(
-                                      plateNumber,
-                                      style: const TextStyle(
-                                        color: AppTheme.navy,
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.w800,
-                                        letterSpacing: 0.6,
-                                        fontFamilyFallback: [
-                                          'monospace',
-                                          'Courier',
-                                        ],
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 18),
-
-                      // Card 1: Identity & Entity
-                      _FormCard(
-                        title: 'Identification',
-                        icon: Icons.badge_outlined,
-                        child: Column(
-                          children: [
-                            if (isDesktop)
-                              Row(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Expanded(
-                                    child: _FormFieldContainer(
-                                      label: 'Vehicle number',
-                                      requiredField: true,
-                                      child: TextFormField(
-                                        controller: _numberController,
-                                        textCapitalization:
-                                            TextCapitalization.characters,
-                                        textInputAction: TextInputAction.next,
-                                        decoration: const InputDecoration(
-                                          hintText: 'e.g. DHAKA-METRO-GA-11-4821',
-                                          prefixIcon: Icon(
-                                            Icons.pin_rounded,
-                                            size: 18,
-                                            color: AppTheme.mutedInk,
-                                          ),
-                                        ),
-                                        validator: (value) =>
-                                            _required(value, 'vehicle number'),
-                                      ),
-                                    ),
-                                  ),
-                                  const SizedBox(width: 16),
-                                  Expanded(
-                                    child: _FormFieldContainer(
-                                      label: 'Company',
-                                      requiredField: true,
-                                      child: TextFormField(
-                                        controller: _companyController,
-                                        textInputAction: TextInputAction.next,
-                                        decoration: const InputDecoration(
-                                          hintText: 'e.g. Stark Logistics Ltd.',
-                                          prefixIcon: Icon(
-                                            Icons.business_rounded,
-                                            size: 18,
-                                            color: AppTheme.mutedInk,
-                                          ),
-                                        ),
-                                        validator: (value) =>
-                                            _required(value, 'company'),
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              )
-                            else ...[
-                              _FormFieldContainer(
-                                label: 'Vehicle number',
-                                requiredField: true,
-                                child: TextFormField(
-                                  controller: _numberController,
-                                  textCapitalization:
-                                      TextCapitalization.characters,
-                                  textInputAction: TextInputAction.next,
-                                  decoration: const InputDecoration(
-                                    hintText: 'e.g. DHAKA-METRO-GA-11-4821',
-                                    prefixIcon: Icon(
-                                      Icons.pin_rounded,
-                                      size: 18,
-                                      color: AppTheme.mutedInk,
-                                    ),
-                                  ),
-                                  validator: (value) =>
-                                      _required(value, 'vehicle number'),
-                                ),
-                              ),
-                              const SizedBox(height: 16),
-                              _FormFieldContainer(
-                                label: 'Company',
-                                requiredField: true,
-                                child: TextFormField(
-                                  controller: _companyController,
-                                  textInputAction: TextInputAction.next,
-                                  decoration: const InputDecoration(
-                                    hintText: 'e.g. Stark Logistics Ltd.',
-                                    prefixIcon: Icon(
-                                      Icons.business_rounded,
-                                      size: 18,
-                                      color: AppTheme.mutedInk,
-                                    ),
-                                  ),
-                                  validator: (value) =>
-                                      _required(value, 'company'),
-                                ),
-                              ),
-                            ],
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 18),
-
-                      // Card 2: Vehicle Specs
-                      _FormCard(
-                        title: 'Specifications',
-                        icon: Icons.tune_rounded,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            _FormFieldContainer(
-                              label: 'Vehicle type',
-                              requiredField: true,
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  TextFormField(
-                                    controller: _typeController,
-                                    textInputAction: TextInputAction.next,
-                                    decoration: const InputDecoration(
-                                      hintText: 'e.g. Truck, Van, Sedan, Bus',
-                                      prefixIcon: Icon(
-                                        Icons.local_shipping_outlined,
-                                        size: 18,
-                                        color: AppTheme.mutedInk,
-                                      ),
-                                    ),
-                                    validator: (value) =>
-                                        _required(value, 'vehicle type'),
-                                  ),
-                                  const SizedBox(height: 8),
-                                  Wrap(
-                                    spacing: 6,
-                                    runSpacing: 6,
-                                    children: [
-                                      'Truck',
-                                      'Van',
-                                      'Sedan',
-                                      'SUV',
-                                      'Bus',
-                                      'Motorcycle',
-                                    ].map((preset) {
-                                      return InkWell(
-                                        onTap: () {
-                                          _typeController.text = preset;
-                                          setState(() {});
-                                        },
-                                        borderRadius: BorderRadius.circular(6),
-                                        child: Container(
-                                          padding: const EdgeInsets.symmetric(
-                                            horizontal: 8,
-                                            vertical: 3,
-                                          ),
-                                          decoration: BoxDecoration(
-                                            color: AppTheme.surfaceAlt,
-                                            borderRadius:
-                                                BorderRadius.circular(6),
-                                            border: Border.all(
-                                              color: AppTheme.border,
-                                            ),
-                                          ),
-                                          child: Text(
-                                            preset,
-                                            style: const TextStyle(
-                                              fontSize: 11,
-                                              color: AppTheme.mutedInk,
-                                              fontWeight: FontWeight.w500,
-                                            ),
-                                          ),
-                                        ),
-                                      );
-                                    }).toList(),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            const SizedBox(height: 16),
-                            if (isDesktop)
-                              Row(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Expanded(
-                                    child: _FormFieldContainer(
-                                      label: 'Brand',
-                                      requiredField: true,
-                                      child: TextFormField(
-                                        controller: _brandController,
-                                        textInputAction: TextInputAction.next,
-                                        decoration: const InputDecoration(
-                                          hintText: 'e.g. Toyota, Volvo, Ford',
-                                          prefixIcon: Icon(
-                                            Icons.branding_watermark_outlined,
-                                            size: 18,
-                                            color: AppTheme.mutedInk,
-                                          ),
-                                        ),
-                                        validator: (value) =>
-                                            _required(value, 'brand'),
-                                      ),
-                                    ),
-                                  ),
-                                  const SizedBox(width: 16),
-                                  Expanded(
-                                    child: _FormFieldContainer(
-                                      label: 'Model',
-                                      requiredField: true,
-                                      child: TextFormField(
-                                        controller: _modelController,
-                                        textInputAction: TextInputAction.done,
-                                        decoration: const InputDecoration(
-                                          hintText: 'e.g. Hiace 2024, FH16',
-                                          prefixIcon: Icon(
-                                            Icons.directions_car_outlined,
-                                            size: 18,
-                                            color: AppTheme.mutedInk,
-                                          ),
-                                        ),
-                                        validator: (value) =>
-                                            _required(value, 'model'),
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              )
-                            else ...[
-                              _FormFieldContainer(
-                                label: 'Brand',
-                                requiredField: true,
-                                child: TextFormField(
-                                  controller: _brandController,
-                                  textInputAction: TextInputAction.next,
-                                  decoration: const InputDecoration(
-                                    hintText: 'e.g. Toyota, Volvo, Ford',
-                                    prefixIcon: Icon(
-                                      Icons.branding_watermark_outlined,
-                                      size: 18,
-                                      color: AppTheme.mutedInk,
-                                    ),
-                                  ),
-                                  validator: (value) =>
-                                      _required(value, 'brand'),
-                                ),
-                              ),
-                              const SizedBox(height: 16),
-                              _FormFieldContainer(
-                                label: 'Model',
-                                requiredField: true,
-                                child: TextFormField(
-                                  controller: _modelController,
-                                  textInputAction: TextInputAction.done,
-                                  decoration: const InputDecoration(
-                                    hintText: 'e.g. Hiace 2024, FH16',
-                                    prefixIcon: Icon(
-                                      Icons.directions_car_outlined,
-                                      size: 18,
-                                      color: AppTheme.mutedInk,
-                                    ),
-                                  ),
-                                  validator: (value) =>
-                                      _required(value, 'model'),
-                                ),
-                              ),
-                            ],
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 18),
-
-                      // Card 3: Operational Status
-                      _FormCard(
-                        title: 'Operational Status',
-                        icon: Icons.traffic_rounded,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text(
-                              'Set the current deployment and operational readiness of this asset.',
-                              style: TextStyle(
-                                color: AppTheme.mutedInk,
-                                fontSize: 12,
-                              ),
-                            ),
-                            const SizedBox(height: 14),
-                            LayoutBuilder(
-                              builder: (context, constraints) {
-                                final isWideCards = constraints.maxWidth >= 600;
-                                final cardWidth = isWideCards
-                                    ? (constraints.maxWidth - 20) / 3
-                                    : double.infinity;
-
-                                return Wrap(
-                                  spacing: 10,
-                                  runSpacing: 10,
-                                  children: [
-                                    _StatusChoiceCard(
-                                      width: cardWidth,
-                                      title: 'Active',
-                                      subtitle: 'Available for dispatch',
-                                      icon: Icons.check_circle_rounded,
-                                      color: const Color(0xFF059669),
-                                      bgColor: const Color(0xFFECFDF5),
-                                      borderColor: const Color(0xFFA7F3D0),
-                                      isSelected: _status.toLowerCase() == 'active',
-                                      onTap: () => setState(
-                                        () => _status = VehicleStatus.active.label,
-                                      ),
-                                    ),
-                                    _StatusChoiceCard(
-                                      width: cardWidth,
-                                      title: 'In maintenance',
-                                      subtitle: 'Service / repairs',
-                                      icon: Icons.build_circle_rounded,
-                                      color: const Color(0xFFD97706),
-                                      bgColor: const Color(0xFFFFFBEB),
-                                      borderColor: const Color(0xFFFDE68A),
-                                      isSelected: _status.toLowerCase().contains('maintenance'),
-                                      onTap: () => setState(
-                                        () => _status = VehicleStatus.maintenance.label,
-                                      ),
-                                    ),
-                                    _StatusChoiceCard(
-                                      width: cardWidth,
-                                      title: 'Inactive',
-                                      subtitle: 'Standby / decommissioned',
-                                      icon: Icons.pause_circle_filled_rounded,
-                                      color: const Color(0xFF64748B),
-                                      bgColor: const Color(0xFFF1F5F9),
-                                      borderColor: const Color(0xFFCBD5E1),
-                                      isSelected: _status.toLowerCase() == 'inactive',
-                                      onTap: () => setState(
-                                        () => _status = VehicleStatus.inactive.label,
-                                      ),
-                                    ),
-                                  ],
-                                );
-                              },
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 18),
-
-                      // Error message if save failed
-                      if (_saveError != null) ...[
-                        Container(
-                          padding: const EdgeInsets.all(14),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFFEF2F2),
-                            borderRadius: BorderRadius.circular(10),
-                            border: Border.all(color: const Color(0xFFFCA5A5)),
-                          ),
-                          child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Icon(
-                                Icons.error_outline_rounded,
-                                color: Color(0xFFDC2626),
-                                size: 18,
-                              ),
-                              const SizedBox(width: 10),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      _saveError!,
-                                      style: const TextStyle(
-                                        color: Color(0xFF991B1B),
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.w500,
-                                      ),
-                                    ),
-                                    if (_saveTimedOut) ...[
-                                      const SizedBox(height: 6),
-                                      TextButton.icon(
-                                        onPressed: _isSaving ? null : _save,
-                                        icon: const Icon(Icons.refresh_rounded, size: 16),
-                                        label: const Text('Try save again'),
-                                        style: TextButton.styleFrom(
-                                          visualDensity: VisualDensity.compact,
-                                          padding: EdgeInsets.zero,
-                                        ),
-                                      ),
-                                    ],
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(height: 18),
-                      ],
-                    ],
+                    validator: (val) => _required(val, 'vehicle number'),
                   ),
                 ),
+                const SizedBox(height: 18),
 
-                // Sticky Command Bottom Bar
-                Container(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: width < 600 ? 16 : 32,
-                    vertical: 14,
-                  ),
-                  decoration: const BoxDecoration(
-                    color: Colors.white,
-                    border: Border(top: BorderSide(color: AppTheme.border)),
-                  ),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
+                // Row with Type and Brand
+                if (twoColumns)
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      if (_isSaving) ...[
-                        const ServerRequestProgress(),
-                        const SizedBox(height: 10),
-                      ],
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          OutlinedButton(
-                            onPressed: _isSaving ? null : () => Navigator.of(context).pop(),
-                            child: const Text('Cancel'),
+                      Expanded(
+                        child: _FieldLabel(
+                          label: 'Type',
+                          child: DropdownButtonFormField<String>(
+                            initialValue: _typeController.text.isNotEmpty
+                                ? _typeController.text
+                                : null,
+                            isExpanded: true,
+                            hint: const Text('Select type'),
+                            items: [
+                              'Truck',
+                              'Van',
+                              'Sedan',
+                              'SUV',
+                              'Bus',
+                              'Motorcycle',
+                              'Pickup',
+                            ].map((t) => DropdownMenuItem(value: t, child: Text(t))).toList(),
+                            onChanged: (val) {
+                              if (val != null) {
+                                setState(() => _typeController.text = val);
+                              }
+                            },
+                            validator: (_) => _required(_typeController.text, 'vehicle type'),
                           ),
-                          const SizedBox(width: 12),
-                          FilledButton.icon(
-                            onPressed: _isSaving ? null : _save,
-                            icon: _isSaving
-                                ? const SizedBox(
-                                    width: 16,
-                                    height: 16,
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2,
-                                      color: Colors.white,
-                                    ),
-                                  )
-                                : const Icon(Icons.check_rounded, size: 18),
-                            label: Text(
-                              _isSaving
-                                  ? 'Saving…'
-                                  : _isEditing
-                                  ? 'Save changes'
-                                  : 'Register vehicle',
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: _FieldLabel(
+                          label: 'Brand',
+                          child: TextFormField(
+                            controller: _brandController,
+                            textInputAction: TextInputAction.next,
+                            decoration: const InputDecoration(
+                              hintText: 'e.g. Brand 1 / Toyota',
                             ),
+                            validator: (val) => _required(val, 'brand'),
                           ),
-                        ],
+                        ),
                       ),
                     ],
+                  )
+                else ...[
+                  _FieldLabel(
+                    label: 'Type',
+                    child: DropdownButtonFormField<String>(
+                      initialValue: _typeController.text.isNotEmpty
+                          ? _typeController.text
+                          : null,
+                      isExpanded: true,
+                      hint: const Text('Select type'),
+                      items: [
+                        'Truck',
+                        'Van',
+                        'Sedan',
+                        'SUV',
+                        'Bus',
+                        'Motorcycle',
+                        'Pickup',
+                      ].map((t) => DropdownMenuItem(value: t, child: Text(t))).toList(),
+                      onChanged: (val) {
+                        if (val != null) {
+                          setState(() => _typeController.text = val);
+                        }
+                      },
+                      validator: (_) => _required(_typeController.text, 'vehicle type'),
+                    ),
+                  ),
+                  const SizedBox(height: 18),
+                  _FieldLabel(
+                    label: 'Brand',
+                    child: TextFormField(
+                      controller: _brandController,
+                      textInputAction: TextInputAction.next,
+                      decoration: const InputDecoration(
+                        hintText: 'e.g. Brand 1 / Toyota',
+                      ),
+                      validator: (val) => _required(val, 'brand'),
+                    ),
+                  ),
+                ],
+                const SizedBox(height: 18),
+
+                // Row with Model and Assigned To / Company
+                if (twoColumns)
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        child: _FieldLabel(
+                          label: 'Model',
+                          child: TextFormField(
+                            controller: _modelController,
+                            textInputAction: TextInputAction.next,
+                            decoration: const InputDecoration(
+                              hintText: 'e.g. Model X / Hiace',
+                            ),
+                            validator: (val) => _required(val, 'model'),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: _FieldLabel(
+                          label: 'Assigned To / Company',
+                          child: TextFormField(
+                            controller: _companyController,
+                            textInputAction: TextInputAction.done,
+                            decoration: const InputDecoration(
+                              hintText: 'e.g. Stark Logistics Ltd.',
+                            ),
+                            validator: (val) => _required(val, 'company'),
+                          ),
+                        ),
+                      ),
+                    ],
+                  )
+                else ...[
+                  _FieldLabel(
+                    label: 'Model',
+                    child: TextFormField(
+                      controller: _modelController,
+                      textInputAction: TextInputAction.next,
+                      decoration: const InputDecoration(
+                        hintText: 'e.g. Model X / Hiace',
+                      ),
+                      validator: (val) => _required(val, 'model'),
+                    ),
+                  ),
+                  const SizedBox(height: 18),
+                  _FieldLabel(
+                    label: 'Assigned To / Company',
+                    child: TextFormField(
+                      controller: _companyController,
+                      textInputAction: TextInputAction.done,
+                      decoration: const InputDecoration(
+                        hintText: 'e.g. Stark Logistics Ltd.',
+                      ),
+                      validator: (val) => _required(val, 'company'),
+                    ),
+                  ),
+                ],
+                const SizedBox(height: 18),
+
+                // Status
+                _FieldLabel(
+                  label: 'Status',
+                  child: DropdownButtonFormField<String>(
+                    initialValue: _status,
+                    isExpanded: true,
+                    items: {
+                      ...VehicleStatus.values.map((s) => s.label),
+                      _status,
+                    }
+                        .map((status) => DropdownMenuItem(
+                              value: status,
+                              child: Text(status),
+                            ))
+                        .toList(),
+                    onChanged: (val) {
+                      if (val != null) setState(() => _status = val);
+                    },
+                  ),
+                ),
+                const SizedBox(height: 24),
+
+                // Error Message if failed
+                if (_saveError != null) ...[
+                  Container(
+                    margin: const EdgeInsets.only(bottom: 16),
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFFEBE6),
+                      borderRadius: BorderRadius.circular(6),
+                      border: Border.all(color: const Color(0xFFFFBDAD)),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          _saveError!,
+                          style: const TextStyle(
+                            color: Color(0xFFBF2600),
+                            fontSize: 12,
+                          ),
+                        ),
+                        if (_saveTimedOut) ...[
+                          const SizedBox(height: 6),
+                          TextButton(
+                            onPressed: _isSaving ? null : _save,
+                            child: const Text('Try again'),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                ],
+
+                if (_isSaving) ...[
+                  const ServerRequestProgress(),
+                  const SizedBox(height: 16),
+                ],
+
+                // Bottom Full-Width "Save" Button matching the guideline
+                SizedBox(
+                  height: 44,
+                  child: FilledButton(
+                    onPressed: _isSaving ? null : _save,
+                    style: FilledButton.styleFrom(
+                      backgroundColor: AppTheme.starkBlue,
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                    ),
+                    child: _isSaving
+                        ? const SizedBox(
+                            width: 18,
+                            height: 18,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Colors.white,
+                            ),
+                          )
+                        : const Text(
+                            'Save',
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
                   ),
                 ),
               ],
             ),
           ),
         ),
-      ),
+      ],
     );
-  }
-}
 
-class _FormCard extends StatelessWidget {
-  const _FormCard({
-    required this.title,
-    required this.icon,
-    required this.child,
-  });
+    if (!isDesktop) {
+      return Scaffold(
+        backgroundColor: AppTheme.canvas,
+        appBar: AppBar(
+          title: Text(_isEditing ? 'Update Vehicle' : 'Register Vehicle'),
+          backgroundColor: Colors.white,
+          elevation: 0,
+        ),
+        body: formContent,
+      );
+    }
 
-  final String title;
-  final IconData icon;
-  final Widget child;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppTheme.border),
-        boxShadow: AppTheme.cardShadow,
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+    // On Desktop: Render the identical persistent sidebar and top bar matching the guideline right mockup
+    return Scaffold(
+      backgroundColor: AppTheme.canvas,
+      body: Row(
         children: [
-          Row(
-            children: [
-              Icon(icon, size: 18, color: AppTheme.teal),
-              const SizedBox(width: 8),
-              Text(
-                title,
-                style: const TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w700,
-                  color: AppTheme.ink,
-                  letterSpacing: -0.2,
+          // Sidebar
+          SizedBox(
+            width: 220,
+            child: Container(
+              color: AppTheme.starkNavy,
+              child: SafeArea(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(20, 24, 20, 28),
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 34,
+                            height: 34,
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF172F54),
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(
+                                color: const Color(0xFF00D2FF).withValues(alpha: 0.3),
+                              ),
+                            ),
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(7),
+                              child: Image.asset(
+                                'assets/images/stark_logo.jpg',
+                                fit: BoxFit.cover,
+                                errorBuilder: (context, error, stackTrace) => const Center(
+                                  child: Text(
+                                    'S',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w900,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          const Text(
+                            'VMS',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 16,
+                              fontWeight: FontWeight.w800,
+                              letterSpacing: 1.0,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    _SidebarStaticItem(
+                      icon: Icons.home_outlined,
+                      label: 'Dashboard',
+                      isSelected: false,
+                    ),
+                    const SizedBox(height: 4),
+                    _SidebarStaticItem(
+                      icon: Icons.directions_car_outlined,
+                      label: 'Vehicle',
+                      isSelected: true,
+                    ),
+                    const SizedBox(height: 4),
+                    _SidebarStaticItem(
+                      icon: Icons.person_outline_rounded,
+                      label: 'User',
+                      isSelected: false,
+                    ),
+                    const SizedBox(height: 4),
+                    _SidebarStaticItem(
+                      icon: Icons.settings_outlined,
+                      label: 'Settings',
+                      isSelected: false,
+                    ),
+                    const Spacer(),
+                  ],
                 ),
               ),
-            ],
+            ),
           ),
-          const SizedBox(height: 16),
-          child,
+
+          // Main Workspace with Header and Form
+          Expanded(
+            child: Column(
+              children: [
+                // Top Bar
+                Container(
+                  height: 56,
+                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  decoration: const BoxDecoration(
+                    color: Colors.white,
+                    border: Border(bottom: BorderSide(color: AppTheme.border)),
+                  ),
+                  child: const Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      Icon(Icons.search_rounded, size: 20, color: AppTheme.mutedInk),
+                      SizedBox(width: 12),
+                      Icon(
+                        Icons.notifications_none_rounded,
+                        size: 20,
+                        color: AppTheme.mutedInk,
+                      ),
+                      SizedBox(width: 16),
+                      CircleAvatar(
+                        radius: 16,
+                        backgroundColor: AppTheme.starkBlueLight,
+                        child: Icon(
+                          Icons.person_rounded,
+                          size: 18,
+                          color: AppTheme.starkBlue,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Expanded(child: formContent),
+              ],
+            ),
+          ),
         ],
       ),
     );
   }
 }
 
-class _FormFieldContainer extends StatelessWidget {
-  const _FormFieldContainer({
-    required this.label,
-    required this.child,
-    this.requiredField = false,
-  });
+class _FieldLabel extends StatelessWidget {
+  const _FieldLabel({required this.label, required this.child});
 
   final String label;
   final Widget child;
-  final bool requiredField;
 
   @override
   Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Padding(
-          padding: const EdgeInsets.only(bottom: 6),
-          child: Row(
-            children: [
-              Text(
-                label,
-                style: const TextStyle(
-                  color: AppTheme.ink,
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              if (requiredField) ...[
-                const SizedBox(width: 3),
-                const Text(
-                  '*',
-                  style: TextStyle(
-                    color: Color(0xFFDC2626),
-                    fontSize: 12,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ],
-            ],
+        Text(
+          label,
+          style: const TextStyle(
+            color: AppTheme.ink,
+            fontSize: 13,
+            fontWeight: FontWeight.w600,
           ),
         ),
-        Semantics(
-          container: true,
-          label: requiredField ? '$label, required' : label,
-          child: child,
-        ),
+        const SizedBox(height: 6),
+        child,
       ],
     );
   }
 }
 
-class _StatusChoiceCard extends StatelessWidget {
-  const _StatusChoiceCard({
-    required this.width,
-    required this.title,
-    required this.subtitle,
+class _SidebarStaticItem extends StatelessWidget {
+  const _SidebarStaticItem({
     required this.icon,
-    required this.color,
-    required this.bgColor,
-    required this.borderColor,
+    required this.label,
     required this.isSelected,
-    required this.onTap,
   });
 
-  final double width;
-  final String title;
-  final String subtitle;
   final IconData icon;
-  final Color color;
-  final Color bgColor;
-  final Color borderColor;
+  final String label;
   final bool isSelected;
-  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      width: width,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(10),
-        child: Container(
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            color: isSelected ? bgColor : AppTheme.surfaceAlt,
-            borderRadius: BorderRadius.circular(10),
-            border: Border.all(
-              color: isSelected ? borderColor : AppTheme.border,
-              width: isSelected ? 1.5 : 1.0,
-            ),
-          ),
-          child: Row(
-            children: [
-              Icon(
-                icon,
-                size: 20,
-                color: isSelected ? color : AppTheme.mutedInk,
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      title,
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w700,
-                        color: isSelected ? color : AppTheme.ink,
-                      ),
-                    ),
-                    Text(
-                      subtitle,
-                      style: const TextStyle(
-                        fontSize: 10,
-                        color: AppTheme.mutedInk,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              if (isSelected)
-                Icon(
-                  Icons.check_circle_rounded,
-                  size: 16,
-                  color: color,
-                ),
-            ],
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 12),
+      decoration: BoxDecoration(
+        color: isSelected ? AppTheme.starkBlue : Colors.transparent,
+        borderRadius: BorderRadius.circular(6),
+      ),
+      child: ListTile(
+        dense: true,
+        leading: Icon(
+          icon,
+          color: isSelected ? Colors.white : const Color(0xFFB0BDD6),
+          size: 20,
+        ),
+        title: Text(
+          label,
+          style: TextStyle(
+            color: isSelected ? Colors.white : const Color(0xFFB0BDD6),
+            fontSize: 13,
+            fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
           ),
         ),
       ),
