@@ -12,10 +12,10 @@ This system consists of **TWO completely independent projects**:
 
 ### Current UI scope
 - `vms-frontend` and `vms-backend` are independent projects with separate version control and dependencies.
-- This frontend demonstrates Login → Vehicle List → Register/Edit with live vehicle records from the backend.
+- The app flow is Login → Dashboard or Vehicle List → Register/Edit, using live vehicle records from the backend.
 - Login uses the backend's `/auth/login` endpoint and stores only its short-lived Bearer token in tab-scoped session storage.
-- Create, edit, delete, list, and read actions use the backend API.
-- Passwords are sent only to the configured backend over HTTP and are not saved in browser storage.
+- List, create, update, and delete actions use the backend API.
+- Passwords are sent to the configured API and are never saved in browser storage. Use HTTPS outside local development.
 
 ---
 
@@ -43,7 +43,7 @@ vms-frontend/
 ## Getting started
 
 ### Prerequisites
-- **Flutter SDK**: `>=3.24.0` (Dart `>=3.5.0`)
+- **Flutter SDK**: use the revision pinned in `.metadata` (Dart `>=3.13.7`, per `pubspec.yaml`)
 - Google Chrome or Chromium-based browser for web debugging
 
 ### Development
@@ -60,13 +60,15 @@ flutter build web --release --dart-define=API_BASE_URL=https://your-api.example.
 ### Netlify deployment
 The repository includes `netlify.toml`; its publish directory is `build/web`. The build script installs the Flutter revision pinned in `.metadata`, then builds the release app with `API_BASE_URL` from the Netlify build environment.
 
-After deploying `vms-backend` to Render, set the Netlify build variable `API_BASE_URL` to the Render service's public HTTPS URL followed by `/api/v1`. This URL is compiled into the public Flutter bundle, so it must not contain credentials or other secrets. The script stops the deploy build if the variable is missing or is not an HTTPS `/api/v1` URL. Set the backend's `CORS_ALLOWED_ORIGIN_PATTERNS` to the Netlify site origin.
+After deploying `vms-backend` to Render:
+
+1. Set the Netlify build variable `API_BASE_URL` to the Render service's public HTTPS URL followed by `/api/v1` (for example, `https://your-service.onrender.com/api/v1`). This value is compiled into the public Flutter bundle, so it must not contain credentials or other secrets. The build script stops if the value is missing or is not an HTTPS URL ending in `/api/v1`.
+2. Set the backend's `CORS_ALLOWED_ORIGIN_PATTERNS` to the Netlify site origin, such as `https://your-site.netlify.app`.
+3. Set `VMS_AUTH_USERNAME` and `VMS_AUTH_PASSWORD` in the backend environment. The login username must be a valid email address. The backend currently supports one configured account and does not provide account registration.
 
 The current app keeps screen navigation inside Flutter and does not use path-based routes, so a Netlify SPA rewrite is not needed. If path-based deep links are introduced later, add a rewrite to `index.html` for those routes.
 
-For browser requests, configure the backend's `CORS_ALLOWED_ORIGIN_PATTERNS` environment variable to include the frontend origin. Its local defaults allow `localhost` and `127.0.0.1` origins.
-
-Create the local course login in the backend's ignored `.env` file using `VMS_AUTH_USERNAME` and `VMS_AUTH_PASSWORD`. See the backend `docs/auth-api.md` contract for details.
+For local development, set `VMS_AUTH_USERNAME` and `VMS_AUTH_PASSWORD` in the backend's ignored `.env` file. The backend's local CORS defaults allow `localhost` and `127.0.0.1` origins. See `vms-backend/docs/auth-api.md` for the login contract; see `vms-backend/docs/vehicle-api.md` for vehicle fields, limits, and endpoints.
 
 ### Static analysis and tests
 ```bash
